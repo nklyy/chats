@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"nn-realtime-support-chat/health"
+	"nn-realtime-support-chat/internal/health"
 )
 
 func main() {
