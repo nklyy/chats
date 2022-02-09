@@ -1,4 +1,4 @@
-module nn-realtime-support-chat
+module noname-realtime-support-chat
 
 go 1.17
 

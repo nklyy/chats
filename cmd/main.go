@@ -7,7 +7,7 @@ import (
 	"go.uber.org/zap"
 	"log"
 	"net/http"
-	"nn-realtime-support-chat/internal/health"
+	"noname-realtime-support-chat/internal/health"
 )
 
 func main() {

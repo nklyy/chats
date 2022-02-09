@@ -3,7 +3,7 @@ package health
 import (
 	"github.com/go-chi/chi/v5"
 	"net/http"
-	"nn-realtime-support-chat/pkg/respond"
+	"noname-realtime-support-chat/pkg/respond"
 )
 
 type Handler struct {
