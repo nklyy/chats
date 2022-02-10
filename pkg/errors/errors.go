@@ -3,7 +3,7 @@ package errors
 import (
 	"fmt"
 	"net/http"
-	"nn-realtime-support-chat/pkg/codes"
+	"noname-realtime-support-chat/pkg/codes"
 )
 
 type Error struct {

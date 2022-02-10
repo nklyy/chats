@@ -4,19 +4,24 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"noname-realtime-support-chat/internal/health"
+	"noname-realtime-support-chat/pkg/logger"
 )
 
 func main() {
 	// Init logger
-	logger, err := zap.NewProduction()
+	newLogger, err := logger.NewLogger("development")
 	if err != nil {
-		log.Fatalf("can't initialize zap logger: %v", err)
+		log.Fatalf("can't create logger: %v", err)
 	}
-	defer logger.Sync()
+
+	zapLogger, err := newLogger.SetupZapLogger()
+	if err != nil {
+		log.Fatalf("can't setup zap logger: %v", err)
+	}
+	defer zapLogger.Sync()
 
 	// Set-up Route
 	router := chi.NewRouter()
@@ -33,7 +38,7 @@ func main() {
 	err = http.ListenAndServe(":5000", router)
 	if err != nil {
 		fmt.Println(err)
-		logger.Fatal("Failed to start HTTP server!", zap.Error(err))
+		zapLogger.Fatalf("Failed to start HTTP server: %v", err)
 		return
 	}
 }
