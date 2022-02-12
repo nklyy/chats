@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"noname-realtime-support-chat/internal/health"
@@ -21,7 +22,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("can't setup zap logger: %v", err)
 	}
-	defer zapLogger.Sync()
+	defer func(zapLogger *zap.SugaredLogger) {
+		err := zapLogger.Sync()
+		if err != nil {
+			log.Fatalf("can't setup zap logger: %v", err)
+		}
+	}(zapLogger)
 
 	// Set-up Route
 	router := chi.NewRouter()
@@ -35,6 +41,7 @@ func main() {
 	})
 
 	// Start App
+	zapLogger.Infof("Starting HTTP server on port: %v", 5000)
 	err = http.ListenAndServe(":5000", router)
 	if err != nil {
 		fmt.Println(err)
