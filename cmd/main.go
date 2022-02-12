@@ -35,6 +35,7 @@ func main() {
 	})
 
 	// Start App
+	zapLogger.Infof("Starting HTTP server on port: %v", 5000)
 	err = http.ListenAndServe(":5000", router)
 	if err != nil {
 		fmt.Println(err)
