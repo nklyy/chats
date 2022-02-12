@@ -1,6 +1,9 @@
 name: deployment
 
 on:
+  push:
+    branches:
+      - dev
   pull_request:
     branches:
       - master
@@ -46,6 +49,6 @@ jobs:
       - name: Run test
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          chmod +x app.env.sh
-          ./app.env.sh
+#          chmod +x app.env.sh
+#          ./app.env.sh
           make test
