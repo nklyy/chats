@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNewLogger(t *testing.T) {
+func TestNewLoggerConfig(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
