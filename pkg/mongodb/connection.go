@@ -9,25 +9,24 @@ import (
 	"time"
 )
 
-func NewConnection(cfg *config.Config) (*mongo.Database, error) {
+func NewConnection(cfg *config.Config) (*mongo.Database, context.Context, error) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(cfg.MongoDbUrl))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		defer client.Disconnect(ctx)
-		return nil, err
+		return nil, nil, err
 	}
 
 	collection := client.Database(cfg.MongoDbName)
 
-	return collection, nil
+	return collection, ctx, nil
 }
