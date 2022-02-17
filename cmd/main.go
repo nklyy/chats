@@ -10,6 +10,7 @@ import (
 	"noname-realtime-support-chat/config"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/pkg/logger"
+	"noname-realtime-support-chat/pkg/mongodb"
 )
 
 func main() {
@@ -38,6 +39,14 @@ func main() {
 	// Set-up Route
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
+
+	// Set-up database
+	db, err := mongodb.NewConnection(cfg)
+	if err != nil {
+		zapLogger.Fatalf("failed to connect to mongodb: %v", err)
+	}
+
+	fmt.Println(db.Name())
 
 	// Handlers
 	healthHandler := health.NewHandler()
