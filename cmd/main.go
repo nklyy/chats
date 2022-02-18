@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -42,19 +40,19 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
-	// Set-up database
-	db, ctx, err := mongodb.NewConnection(cfg)
+	// Connect to database
+	db, ctx, cancel, err := mongodb.NewConnection(cfg)
 	if err != nil {
 		zapLogger.Fatalf("failed to connect to mongodb: %v", err)
 	}
-	defer func(client *mongo.Client, ctx context.Context) {
-		err := client.Disconnect(ctx)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(db.Client(), ctx)
+	defer mongodb.Close(db, ctx, cancel)
 
-	fmt.Println(db.Name())
+	// Ping db
+	err = mongodb.Ping(db, ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	zapLogger.Info("DB connected successfully")
 
 	// Handlers
 	healthHandler := health.NewHandler()

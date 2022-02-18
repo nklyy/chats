@@ -9,24 +9,27 @@ import (
 	"time"
 )
 
-func NewConnection(cfg *config.Config) (*mongo.Database, context.Context, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(cfg.MongoDbUrl))
-	if err != nil {
-		return nil, nil, err
+func NewConnection(cfg *config.Config) (*mongo.Client, context.Context, context.CancelFunc, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.MongoDbUrl))
+	//collection := client.Database(cfg.MongoDbName)
+
+	return client, ctx, cancel, err
+}
+
+func Ping(client *mongo.Client, ctx context.Context) error {
+	if err := client.Ping(ctx, readpref.Primary()); err != nil {
+		return err
 	}
+	return nil
+}
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
+func Close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
+	defer cancel()
+	defer func(client *mongo.Client, ctx context.Context) {
+		err := client.Disconnect(ctx)
+		if err != nil {
 
-	err = client.Ping(ctx, readpref.Primary())
-	if err != nil {
-		return nil, nil, err
-	}
-
-	collection := client.Database(cfg.MongoDbName)
-
-	return collection, ctx, nil
+		}
+	}(client, ctx)
 }
