@@ -5,6 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
 	"noname-realtime-support-chat/config"
 	"time"
 )
@@ -29,7 +30,7 @@ func Close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc)
 	defer func(client *mongo.Client, ctx context.Context) {
 		err := client.Disconnect(ctx)
 		if err != nil {
-
+			log.Fatal(err)
 		}
 	}(client, ctx)
 }
