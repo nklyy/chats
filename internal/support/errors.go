@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	StatusInvalidRequest  errors.Status = "invalid_request"
+	StatusInvalidBody     errors.Status = "invalid_body"
 	StatusUserNotFound    errors.Status = "user_not_found"
 	StatusInvalidEmail    errors.Status = "invalid_email"
 	StatusInvalidName     errors.Status = "invalid_name"
@@ -13,6 +15,8 @@ const (
 )
 
 var (
+	ErrInvalidRequest  = errors.New(codes.BadRequest, StatusInvalidRequest)
+	ErrInvalidBody     = errors.New(codes.BadRequest, StatusInvalidBody)
 	ErrNotFound        = errors.New(codes.NotFound, StatusUserNotFound)
 	ErrInvalidEmail    = errors.New(codes.BadRequest, StatusInvalidEmail)
 	ErrInvalidName     = errors.New(codes.BadRequest, StatusInvalidName)

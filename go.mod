@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/go-chi/chi/v5 v5.0.7
+	github.com/go-playground/validator/v10 v10.10.0
 	github.com/golang/mock v1.6.0
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
@@ -14,10 +15,13 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
+	github.com/go-playground/locales v0.14.0 // indirect
+	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
