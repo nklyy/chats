@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"noname-realtime-support-chat/config"
 	"noname-realtime-support-chat/internal/health"
+	"noname-realtime-support-chat/internal/support"
 	"noname-realtime-support-chat/pkg/logger"
+	"noname-realtime-support-chat/pkg/mongodb"
 )
 
 func main() {
@@ -39,11 +41,42 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
+	// Connect to database
+	db, ctx, cancel, err := mongodb.NewConnection(cfg)
+	if err != nil {
+		zapLogger.Fatalf("failed to connect to mongodb: %v", err)
+	}
+	defer mongodb.Close(db, ctx, cancel)
+
+	// Ping db
+	err = mongodb.Ping(db, ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	zapLogger.Info("DB connected successfully")
+
+	// Repositories
+	supportRepository, err := support.NewRepository(db, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failde to create support repository: %v", err)
+	}
+
+	// Services
+	supportService, err := support.NewService(supportRepository, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failde to create support service: %v", err)
+	}
+
 	// Handlers
 	healthHandler := health.NewHandler()
+	supportHandler, err := support.NewHandler(supportService)
+	if err != nil {
+		zapLogger.Fatalf("failde to create support handler: %v", err)
+	}
 
 	router.Route("/api/v1", func(r chi.Router) {
 		healthHandler.SetupRoutes(r)
+		supportHandler.SetupRoutes(r)
 	})
 
 	// Start App

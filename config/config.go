@@ -8,6 +8,8 @@ import (
 type Config struct {
 	PORT        string `mapstructure:"PORT"`
 	Environment string `mapstructure:"APP_ENV"`
+	MongoDbName string `mapstructure:"MONGO_DB_NAME"`
+	MongoDbUrl  string `mapstructure:"MONGO_DB_URL"`
 }
 
 func Get(path string) (*Config, error) {
