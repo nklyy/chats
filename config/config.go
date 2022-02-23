@@ -10,6 +10,7 @@ type Config struct {
 	Environment string `mapstructure:"APP_ENV"`
 	MongoDbName string `mapstructure:"MONGO_DB_NAME"`
 	MongoDbUrl  string `mapstructure:"MONGO_DB_URL"`
+	Salt        int    `mapstructure:"SALT"`
 }
 
 func Get(path string) (*Config, error) {
