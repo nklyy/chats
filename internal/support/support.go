@@ -64,3 +64,7 @@ func (s *Support) SetOffline() {
 	s.Status = false
 	s.UpdatedAt = time.Now()
 }
+
+func (s *Support) RemovePassword() {
+	s.Password = ""
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
@@ -33,7 +34,13 @@ func NewRepository(db *mongo.Client, logger *zap.SugaredLogger) (Repository, err
 func (r *repository) GetSupportById(ctx context.Context, id string) (*Support, error) {
 	var support Support
 
-	if err := r.db.Database("Chat").Collection("support").FindOne(ctx, bson.M{"_id": id}).Decode(&support); err != nil {
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		r.logger.Errorf("failed to decode id %v", err)
+		return nil, ErrNotFound
+	}
+
+	if err := r.db.Database("Chat").Collection("support").FindOne(ctx, bson.M{"_id": objId}).Decode(&support); err != nil {
 		if err == mongo.ErrNoDocuments {
 			r.logger.Errorf("unable to find support by id '%s': %v", id, err)
 			return nil, ErrNotFound

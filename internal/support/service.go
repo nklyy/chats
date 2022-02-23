@@ -38,6 +38,8 @@ func (s *service) GetSupportById(ctx context.Context, id string) (*DTO, error) {
 		return nil, err
 	}
 
+	support.RemovePassword()
+
 	return MapToDTO(support), nil
 }
 
