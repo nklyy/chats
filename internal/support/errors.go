@@ -6,15 +6,17 @@ import (
 )
 
 const (
-	StatusInvalidRequest  errors.Status = "invalid_request"
-	StatusInvalidBody     errors.Status = "invalid_body"
-	StatusUserNotFound    errors.Status = "user_not_found"
-	StatusInvalidEmail    errors.Status = "invalid_email"
-	StatusInvalidName     errors.Status = "invalid_name"
-	StatusInvalidPassword errors.Status = "invalid_password"
+	StatusSupportAlreadyExists errors.Status = "support_already_exists"
+	StatusInvalidRequest       errors.Status = "invalid_request"
+	StatusInvalidBody          errors.Status = "invalid_body"
+	StatusUserNotFound         errors.Status = "user_not_found"
+	StatusInvalidEmail         errors.Status = "invalid_email"
+	StatusInvalidName          errors.Status = "invalid_name"
+	StatusInvalidPassword      errors.Status = "invalid_password"
 )
 
 var (
+	ErrAlreadyExists   = errors.New(codes.DuplicateError, StatusSupportAlreadyExists)
 	ErrInvalidRequest  = errors.New(codes.BadRequest, StatusInvalidRequest)
 	ErrInvalidBody     = errors.New(codes.BadRequest, StatusInvalidBody)
 	ErrNotFound        = errors.New(codes.NotFound, StatusUserNotFound)

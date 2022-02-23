@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// Services
-	supportService, err := support.NewService(supportRepository, zapLogger)
+	supportService, err := support.NewService(supportRepository, zapLogger, &cfg.Salt)
 	if err != nil {
 		zapLogger.Fatalf("failde to create support service: %v", err)
 	}

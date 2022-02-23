@@ -5,11 +5,13 @@ import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 )
 
 type Repository interface {
 	GetSupportById(ctx context.Context, id string) (*Support, error)
+	CreateSupport(ctx context.Context, support *Support) (string, error)
 }
 
 type repository struct {
@@ -42,4 +44,30 @@ func (r *repository) GetSupportById(ctx context.Context, id string) (*Support, e
 	}
 
 	return &support, nil
+}
+
+func (r *repository) CreateSupport(ctx context.Context, support *Support) (string, error) {
+	mod := mongo.IndexModel{
+		Keys:    bson.M{"email": 1}, // index in ascending order or -1 for descending order
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err := r.db.Database("Chat").Collection("support").Indexes().CreateOne(ctx, mod)
+	if err != nil {
+		r.logger.Errorf("failed to create support index: %v", err)
+		return "", err
+	}
+
+	_, err = r.db.Database("Chat").Collection("support").InsertOne(ctx, support)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			r.logger.Errorf("failed to insert support data to db due to duplicate error: %v", err)
+			return "", ErrAlreadyExists
+		}
+
+		r.logger.Errorf("failed to insert support data to db: %v", err)
+		return "", err
+	}
+
+	return support.ID.Hex(), nil
 }

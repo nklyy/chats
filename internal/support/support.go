@@ -2,6 +2,7 @@ package support
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 	"noname-realtime-support-chat/pkg/errors"
 	"time"
 )
@@ -17,7 +18,7 @@ type Support struct {
 	UpdatedAt time.Time `bson:"updated_at"`
 }
 
-func NewSupport(email, name, password string) (*Support, error) {
+func NewSupport(email, name, password string, salt int) (*Support, error) {
 	if email == "" {
 		return nil, errors.WithMessage(ErrInvalidEmail, "should be not empty")
 	}
@@ -28,11 +29,16 @@ func NewSupport(email, name, password string) (*Support, error) {
 		return nil, errors.WithMessage(ErrInvalidPassword, "should be not empty")
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), salt)
+	if err != nil {
+		return nil, errors.WithMessage(ErrInvalidPassword, err.Error())
+	}
+
 	return &Support{
 		ID:        primitive.NewObjectID(),
 		Email:     email,
 		Name:      name,
-		Password:  password,
+		Password:  string(hashedPassword),
 		Status:    false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),

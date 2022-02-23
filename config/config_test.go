@@ -12,6 +12,7 @@ func TestInit(t *testing.T) {
 		environment string
 		mongoDbName string
 		mongoDbUrl  string
+		salt        string
 	}
 
 	type args struct {
@@ -23,6 +24,7 @@ func TestInit(t *testing.T) {
 		os.Setenv("ENVIRONMENT", env.environment)
 		os.Setenv("MONGO_DB_NAME", env.mongoDbName)
 		os.Setenv("MONGO_DB_URL", env.mongoDbUrl)
+		os.Setenv("SALT", env.salt)
 	}
 
 	tests := []struct {
@@ -39,6 +41,7 @@ func TestInit(t *testing.T) {
 					environment: "development",
 					mongoDbName: "example",
 					mongoDbUrl:  "http://127.0.0.1",
+					salt:        "11",
 				},
 			},
 			want: &Config{
@@ -46,6 +49,7 @@ func TestInit(t *testing.T) {
 				Environment: "development",
 				MongoDbName: "example",
 				MongoDbUrl:  "http://127.0.0.1",
+				Salt:        11,
 			},
 		},
 	}
