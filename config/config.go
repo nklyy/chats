@@ -11,6 +11,8 @@ type Config struct {
 	MongoDbName string `mapstructure:"MONGO_DB_NAME"`
 	MongoDbUrl  string `mapstructure:"MONGO_DB_URL"`
 	Salt        int    `mapstructure:"SALT"`
+	JwtSecret   string `mapstructure:"JWT_SECRET"`
+	JwtExpiry   int    `mapstructure:"JWT_EXPIRY"`
 }
 
 func Get(path string) (*Config, error) {

@@ -10,6 +10,7 @@ import (
 	"noname-realtime-support-chat/config"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/internal/support"
+	"noname-realtime-support-chat/pkg/jwt"
 	"noname-realtime-support-chat/pkg/logger"
 	"noname-realtime-support-chat/pkg/mongodb"
 )
@@ -62,6 +63,12 @@ func main() {
 	}
 
 	// Services
+	_, err = jwt.NewJwtService(cfg.JwtSecret, &cfg.JwtExpiry)
+	if err != nil {
+		zapLogger.Fatalf("failde to jwt service: %v", err)
+
+	}
+
 	supportService, err := support.NewService(supportRepository, zapLogger, &cfg.Salt)
 	if err != nil {
 		zapLogger.Fatalf("failde to create support service: %v", err)
