@@ -63,13 +63,13 @@ func main() {
 	}
 
 	// Services
-	_, err = jwt.NewJwtService(cfg.JwtSecret, &cfg.JwtExpiry)
+	jwtSvc, err := jwt.NewJwtService(cfg.JwtSecret, &cfg.JwtExpiry)
 	if err != nil {
 		zapLogger.Fatalf("failde to jwt service: %v", err)
 
 	}
 
-	supportService, err := support.NewService(supportRepository, zapLogger, &cfg.Salt)
+	supportService, err := support.NewService(supportRepository, zapLogger, &cfg.Salt, jwtSvc)
 	if err != nil {
 		zapLogger.Fatalf("failde to create support service: %v", err)
 	}

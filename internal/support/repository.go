@@ -12,6 +12,7 @@ import (
 
 type Repository interface {
 	GetSupportById(ctx context.Context, id string) (*Support, error)
+	GetSupportByEmail(ctx context.Context, id string) (*Support, error)
 	CreateSupport(ctx context.Context, support *Support) (string, error)
 }
 
@@ -47,6 +48,22 @@ func (r *repository) GetSupportById(ctx context.Context, id string) (*Support, e
 		}
 
 		r.logger.Errorf("unable to find support due to internal error: %v; id: %s", err, id)
+		return nil, err
+	}
+
+	return &support, nil
+}
+
+func (r *repository) GetSupportByEmail(ctx context.Context, email string) (*Support, error) {
+	var support Support
+
+	if err := r.db.Database("Chat").Collection("support").FindOne(ctx, bson.M{"email": email}).Decode(&support); err != nil {
+		if err == mongo.ErrNoDocuments {
+			r.logger.Errorf("unable to find support by email '%s': %v", email, err)
+			return nil, ErrNotFound
+		}
+
+		r.logger.Errorf("unable to find support due to internal error: %v; id: %s", err, email)
 		return nil, err
 	}
 

@@ -75,8 +75,13 @@ type DTO struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type CreateSupportDTO struct {
+type RegistrationDTO struct {
 	Email    string `json:"email" validate:"required,email"`
 	Name     string `json:"name" validate:"required"`
+	Password string `json:"password" validate:"required,password"`
+}
+
+type LoginDTO struct {
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,password"`
 }
