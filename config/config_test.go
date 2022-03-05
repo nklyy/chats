@@ -13,6 +13,8 @@ func TestInit(t *testing.T) {
 		mongoDbName string
 		mongoDbUrl  string
 		salt        string
+		jwtSecret   string
+		jwtExpiry   string
 	}
 
 	type args struct {
@@ -25,6 +27,8 @@ func TestInit(t *testing.T) {
 		os.Setenv("MONGO_DB_NAME", env.mongoDbName)
 		os.Setenv("MONGO_DB_URL", env.mongoDbUrl)
 		os.Setenv("SALT", env.salt)
+		os.Setenv("JWT_SECRET", env.jwtSecret)
+		os.Setenv("JWT_EXPIRY", env.jwtExpiry)
 	}
 
 	tests := []struct {
@@ -42,6 +46,8 @@ func TestInit(t *testing.T) {
 					mongoDbName: "example",
 					mongoDbUrl:  "http://127.0.0.1",
 					salt:        "11",
+					jwtSecret:   "jwt",
+					jwtExpiry:   "100",
 				},
 			},
 			want: &Config{
@@ -50,6 +56,8 @@ func TestInit(t *testing.T) {
 				MongoDbName: "example",
 				MongoDbUrl:  "http://127.0.0.1",
 				Salt:        11,
+				JwtSecret:   "jwt",
+				JwtExpiry:   100,
 			},
 		},
 	}

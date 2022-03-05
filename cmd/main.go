@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -10,8 +11,10 @@ import (
 	"noname-realtime-support-chat/config"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/internal/support"
+	"noname-realtime-support-chat/pkg/jwt"
 	"noname-realtime-support-chat/pkg/logger"
 	"noname-realtime-support-chat/pkg/mongodb"
+	"syscall"
 )
 
 func main() {
@@ -32,14 +35,10 @@ func main() {
 	}
 	defer func(zapLogger *zap.SugaredLogger) {
 		err := zapLogger.Sync()
-		if err != nil {
+		if err != nil && !errors.Is(err, syscall.ENOTTY) {
 			log.Fatalf("can't setup zap logger: %v", err)
 		}
 	}(zapLogger)
-
-	// Set-up Route
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
 
 	// Connect to database
 	db, ctx, cancel, err := mongodb.NewConnection(cfg)
@@ -56,16 +55,31 @@ func main() {
 	zapLogger.Info("DB connected successfully")
 
 	// Repositories
-	supportRepository, err := support.NewRepository(db, zapLogger)
+	supportRepository, err := support.NewRepository(db, cfg.MongoDbName, zapLogger)
 	if err != nil {
 		zapLogger.Fatalf("failde to create support repository: %v", err)
 	}
 
 	// Services
-	supportService, err := support.NewService(supportRepository, zapLogger, &cfg.Salt)
+	jwtSvc, err := jwt.NewJwtService(cfg.JwtSecret, &cfg.JwtExpiry)
+	if err != nil {
+		zapLogger.Fatalf("failde to jwt service: %v", err)
+	}
+
+	supportService, err := support.NewService(supportRepository, zapLogger, &cfg.Salt, jwtSvc)
 	if err != nil {
 		zapLogger.Fatalf("failde to create support service: %v", err)
 	}
+
+	//Middleware
+	supportMiddleware, err := support.NewMiddleware(jwtSvc, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up support middleware %v", err)
+	}
+
+	// Set-up Route
+	router := chi.NewRouter()
+	router.Use(middleware.Logger)
 
 	// Handlers
 	healthHandler := health.NewHandler()
@@ -74,9 +88,15 @@ func main() {
 		zapLogger.Fatalf("failde to create support handler: %v", err)
 	}
 
+	router.Route("/api/v1/auth", func(r chi.Router) {
+		supportHandler.SetupAuthRoutes(r)
+	})
+
 	router.Route("/api/v1", func(r chi.Router) {
+		supportRoute := r.With(supportMiddleware.JwtMiddleware)
+
 		healthHandler.SetupRoutes(r)
-		supportHandler.SetupRoutes(r)
+		supportHandler.SetupRoutes(supportRoute)
 	})
 
 	// Start App

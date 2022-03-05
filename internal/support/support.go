@@ -64,3 +64,16 @@ func (s *Support) SetOffline() {
 	s.Status = false
 	s.UpdatedAt = time.Now()
 }
+
+func (s *Support) RemovePassword() {
+	s.Password = ""
+}
+
+func (s *Support) CheckPassword(password string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(s.Password), []byte(password))
+	if err != nil {
+		return false, ErrInvalidPassword
+	}
+
+	return true, nil
+}

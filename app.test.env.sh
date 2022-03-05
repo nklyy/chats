@@ -4,4 +4,6 @@ APP_ENV=development
 MONGO_DB_NAME=Example
 MONGO_DB_URL=http://127.0.0.1
 SALT=10
+JWT_SECRET=asd
+JWT_EXPIRY=1
 EOF
