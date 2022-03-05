@@ -21,9 +21,12 @@ func NewHandler(supportSvc Service) (*Handler, error) {
 	return &Handler{supportSvc: supportSvc}, nil
 }
 
-func (h *Handler) SetupRoutes(router chi.Router) {
+func (h *Handler) SetupAuthRoutes(router chi.Router) {
 	router.Post("/support/registration", h.Registration)
 	router.Post("/support/login", h.Login)
+}
+
+func (h *Handler) SetupRoutes(router chi.Router) {
 	router.Get("/support/{id}", h.GetSupportById)
 }
 

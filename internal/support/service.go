@@ -30,7 +30,7 @@ func NewService(repository Repository, logger *zap.SugaredLogger, salt *int, jwt
 	if salt == nil {
 		return nil, errors.New("invalid salt")
 	}
-	if salt == nil {
+	if jwtSvc == nil {
 		return nil, errors.New("invalid jwt service")
 	}
 

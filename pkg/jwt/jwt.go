@@ -32,7 +32,7 @@ func (s *service) CreateJWT(name, role string) (*string, error) {
 		Name:      name,
 		Role:      role,
 		IssuedAt:  time.Now(),
-		ExpiredAt: time.Now().Add(time.Duration(s.expiry)),
+		ExpiredAt: time.Now().Add(time.Minute * time.Duration(s.expiry)),
 	}
 
 	// sign token
@@ -67,5 +67,6 @@ func (s *service) VerifyJWT(token string) (*Payload, error) {
 	if !ok {
 		return nil, errors.New("token is invalid")
 	}
+
 	return payload, nil
 }
