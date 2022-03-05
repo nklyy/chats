@@ -55,7 +55,7 @@ func main() {
 	zapLogger.Info("DB connected successfully")
 
 	// Repositories
-	supportRepository, err := support.NewRepository(db, zapLogger)
+	supportRepository, err := support.NewRepository(db, cfg.MongoDbName, zapLogger)
 	if err != nil {
 		zapLogger.Fatalf("failde to create support repository: %v", err)
 	}
