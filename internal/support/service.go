@@ -7,6 +7,7 @@ import (
 	"noname-realtime-support-chat/pkg/jwt"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
 	Registration(ctx context.Context, dto *RegistrationDTO) (*string, error)
 	Login(ctx context.Context, dto *LoginDTO) (*string, error)
@@ -50,7 +51,7 @@ func (s *service) GetSupportById(ctx context.Context, id string) (*DTO, error) {
 }
 
 func (s *service) Registration(ctx context.Context, dto *RegistrationDTO) (*string, error) {
-	support, err := NewSupport(dto.Email, dto.Name, dto.Password, s.salt)
+	support, err := NewSupport(dto.Email, dto.Name, dto.Password, &s.salt)
 	if err != nil {
 		s.logger.Errorf("failed to create new support %v", err)
 		return nil, err

@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+//go:generate mockgen -source=middleware.go -destination=mocks/middleware_mock.go
 type Middleware interface {
 	JwtMiddleware(next http.Handler) http.Handler
 }
