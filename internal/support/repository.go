@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
+//go:generate mockgen -source=repository.go -destination=mocks/repository_mock.go
 type Repository interface {
 	GetSupportById(ctx context.Context, id string) (*Support, error)
 	GetSupportByEmail(ctx context.Context, id string) (*Support, error)

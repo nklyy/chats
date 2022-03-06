@@ -18,7 +18,7 @@ type Support struct {
 	UpdatedAt time.Time `bson:"updated_at"`
 }
 
-func NewSupport(email, name, password string, salt int) (*Support, error) {
+func NewSupport(email, name, password string, salt *int) (*Support, error) {
 	if email == "" {
 		return nil, errors.WithMessage(ErrInvalidEmail, "should be not empty")
 	}
@@ -28,8 +28,11 @@ func NewSupport(email, name, password string, salt int) (*Support, error) {
 	if password == "" {
 		return nil, errors.WithMessage(ErrInvalidPassword, "should be not empty")
 	}
+	if salt == nil {
+		return nil, errors.WithMessage(ErrInvalidSalt, "should be not empty")
+	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), salt)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), *salt)
 	if err != nil {
 		return nil, errors.WithMessage(ErrInvalidPassword, err.Error())
 	}

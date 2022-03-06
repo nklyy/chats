@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//go:generate mockgen -source=jwt.go -destination=mocks/jwt_mock.go
 type Service interface {
 	CreateJWT(name, role string) (*string, error)
 	VerifyJWT(token string) (*Payload, error)

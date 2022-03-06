@@ -13,6 +13,7 @@ const (
 	StatusInvalidEmail                   errors.Status = "invalid_email"
 	StatusInvalidName                    errors.Status = "invalid_name"
 	StatusInvalidPassword                errors.Status = "invalid_password"
+	StatusInvalidSalt                    errors.Status = "invalid_salt"
 	StatusAuthorizationToken             errors.Status = "invalid_authorization_token"
 	StatusRequiredAuthorizationToken     errors.Status = "authorization_token_required"
 	StatusFailedVerifyAuthorizationToken errors.Status = "failed_verify_authorization_token"
@@ -27,6 +28,7 @@ var (
 	ErrInvalidEmail                   = errors.New(codes.BadRequest, StatusInvalidEmail)
 	ErrInvalidName                    = errors.New(codes.BadRequest, StatusInvalidName)
 	ErrInvalidPassword                = errors.New(codes.BadRequest, StatusInvalidPassword)
+	ErrInvalidSalt                    = errors.New(codes.BadRequest, StatusInvalidSalt)
 	ErrAuthorizationToken             = errors.New(codes.Forbidden, StatusAuthorizationToken)
 	ErrRequiredAuthorizationToken     = errors.New(codes.Forbidden, StatusRequiredAuthorizationToken)
 	ErrFailedVerifyAuthorizationToken = errors.New(codes.Forbidden, StatusFailedVerifyAuthorizationToken)
