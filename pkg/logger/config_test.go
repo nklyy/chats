@@ -1,8 +1,9 @@
-package logger
+package logger_test
 
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"noname-realtime-support-chat/pkg/logger"
 	"testing"
 )
 
@@ -12,11 +13,11 @@ func TestNewLoggerConfig(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		expect func(*testing.T, Config)
+		expect func(*testing.T, logger.Config)
 	}{
 		{
 			name: "should return logger config",
-			expect: func(t *testing.T, l Config) {
+			expect: func(t *testing.T, l logger.Config) {
 				assert.NotNil(t, l)
 			},
 		},
@@ -24,7 +25,7 @@ func TestNewLoggerConfig(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			svc := NewLoggerConfig()
+			svc := logger.NewLoggerConfig()
 			tc.expect(t, svc)
 		})
 	}

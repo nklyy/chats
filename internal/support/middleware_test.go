@@ -1,9 +1,10 @@
-package support
+package support_test
 
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
+	"noname-realtime-support-chat/internal/support"
 	"noname-realtime-support-chat/pkg/jwt"
 	mock_jwt "noname-realtime-support-chat/pkg/jwt/mocks"
 	"testing"
@@ -17,13 +18,13 @@ func TestNewMiddleware(t *testing.T) {
 		name   string
 		jwtSvc jwt.Service
 		logger *zap.SugaredLogger
-		expect func(*testing.T, Middleware, error)
+		expect func(*testing.T, support.Middleware, error)
 	}{
 		{
 			name:   "should return middleware",
 			jwtSvc: mock_jwt.NewMockService(controller),
 			logger: &zap.SugaredLogger{},
-			expect: func(t *testing.T, m Middleware, err error) {
+			expect: func(t *testing.T, m support.Middleware, err error) {
 				assert.NotNil(t, m)
 				assert.Nil(t, err)
 			},
@@ -32,7 +33,7 @@ func TestNewMiddleware(t *testing.T) {
 			name:   "should return invalid jwt service",
 			jwtSvc: nil,
 			logger: &zap.SugaredLogger{},
-			expect: func(t *testing.T, m Middleware, err error) {
+			expect: func(t *testing.T, m support.Middleware, err error) {
 				assert.Nil(t, m)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "invalid jwt service")
@@ -42,7 +43,7 @@ func TestNewMiddleware(t *testing.T) {
 			name:   "should return invalid logger",
 			jwtSvc: mock_jwt.NewMockService(controller),
 			logger: nil,
-			expect: func(t *testing.T, m Middleware, err error) {
+			expect: func(t *testing.T, m support.Middleware, err error) {
 				assert.Nil(t, m)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "invalid logger")
@@ -52,7 +53,7 @@ func TestNewMiddleware(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			svc, err := NewMiddleware(tc.jwtSvc, tc.logger)
+			svc, err := support.NewMiddleware(tc.jwtSvc, tc.logger)
 			tc.expect(t, svc, err)
 		})
 	}

@@ -1,9 +1,10 @@
-package logger
+package logger_test
 
 import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"noname-realtime-support-chat/pkg/logger"
 	"testing"
 )
 
@@ -16,12 +17,12 @@ func TestNewLogger(t *testing.T) {
 	tests := []struct {
 		name   string
 		appEnv string
-		expect func(*testing.T, Logger, error)
+		expect func(*testing.T, logger.Logger, error)
 	}{
 		{
 			name:   "should return logger",
 			appEnv: appEnv,
-			expect: func(t *testing.T, l Logger, err error) {
+			expect: func(t *testing.T, l logger.Logger, err error) {
 				assert.NotNil(t, l)
 				assert.Nil(t, err)
 			},
@@ -29,7 +30,7 @@ func TestNewLogger(t *testing.T) {
 		{
 			name:   "should return env error",
 			appEnv: "",
-			expect: func(t *testing.T, l Logger, err error) {
+			expect: func(t *testing.T, l logger.Logger, err error) {
 				assert.NotNil(t, err)
 				assert.Equal(t, err, errors.New("invalid app env"))
 				assert.Nil(t, l)
@@ -39,7 +40,7 @@ func TestNewLogger(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			svc, err := NewLogger(tc.appEnv)
+			svc, err := logger.NewLogger(tc.appEnv)
 			tc.expect(t, svc, err)
 		})
 	}

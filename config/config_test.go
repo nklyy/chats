@@ -1,6 +1,7 @@
-package config
+package config_test
 
 import (
+	"noname-realtime-support-chat/config"
 	"os"
 	"reflect"
 	"testing"
@@ -34,7 +35,7 @@ func TestInit(t *testing.T) {
 	tests := []struct {
 		name      string
 		args      args
-		want      *Config
+		want      *config.Config
 		wantError bool
 	}{
 		{
@@ -50,7 +51,7 @@ func TestInit(t *testing.T) {
 					jwtExpiry:   "100",
 				},
 			},
-			want: &Config{
+			want: &config.Config{
 				PORT:        ":5000",
 				Environment: "development",
 				MongoDbName: "example",
@@ -66,7 +67,7 @@ func TestInit(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			setEnv(test.args.env)
 
-			got, err := Get("..")
+			got, err := config.Get("..")
 			if (err != nil) != test.wantError {
 				t.Errorf("Init() error = %v, wantErr %v", err, test.wantError)
 
