@@ -1,8 +1,9 @@
-package support
+package support_test
 
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"noname-realtime-support-chat/internal/support"
 	"noname-realtime-support-chat/pkg/errors"
 	"testing"
 )
@@ -19,7 +20,7 @@ func TestNewSupport(t *testing.T) {
 		name     string
 		password string
 		salt     *int
-		expect   func(*testing.T, *Support, error)
+		expect   func(*testing.T, *support.Support, error)
 	}{
 		{
 			testName: "should return support",
@@ -27,7 +28,7 @@ func TestNewSupport(t *testing.T) {
 			name:     "name",
 			password: "password",
 			salt:     &salt,
-			expect: func(t *testing.T, support *Support, err error) {
+			expect: func(t *testing.T, support *support.Support, err error) {
 				assert.NotNil(t, support)
 				assert.Nil(t, err)
 			},
@@ -38,10 +39,10 @@ func TestNewSupport(t *testing.T) {
 			name:     "name",
 			password: "password",
 			salt:     &salt,
-			expect: func(t *testing.T, support *Support, err error) {
-				assert.Nil(t, support)
+			expect: func(t *testing.T, s *support.Support, err error) {
+				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(ErrInvalidEmail, "should be not empty").Error())
+				assert.EqualError(t, err, errors.WithMessage(support.ErrInvalidEmail, "should be not empty").Error())
 			},
 		},
 		{
@@ -50,10 +51,10 @@ func TestNewSupport(t *testing.T) {
 			name:     "",
 			password: "password",
 			salt:     &salt,
-			expect: func(t *testing.T, support *Support, err error) {
-				assert.Nil(t, support)
+			expect: func(t *testing.T, s *support.Support, err error) {
+				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(ErrInvalidName, "should be not empty").Error())
+				assert.EqualError(t, err, errors.WithMessage(support.ErrInvalidName, "should be not empty").Error())
 			},
 		},
 		{
@@ -62,10 +63,10 @@ func TestNewSupport(t *testing.T) {
 			name:     "name",
 			password: "",
 			salt:     &salt,
-			expect: func(t *testing.T, support *Support, err error) {
-				assert.Nil(t, support)
+			expect: func(t *testing.T, s *support.Support, err error) {
+				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(ErrInvalidPassword, "should be not empty").Error())
+				assert.EqualError(t, err, errors.WithMessage(support.ErrInvalidPassword, "should be not empty").Error())
 			},
 		},
 		{
@@ -74,17 +75,17 @@ func TestNewSupport(t *testing.T) {
 			name:     "name",
 			password: "password",
 			salt:     nil,
-			expect: func(t *testing.T, support *Support, err error) {
-				assert.Nil(t, support)
+			expect: func(t *testing.T, s *support.Support, err error) {
+				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(ErrInvalidSalt, "should be not empty").Error())
+				assert.EqualError(t, err, errors.WithMessage(support.ErrInvalidSalt, "should be not empty").Error())
 			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.testName, func(t *testing.T) {
-			svc, err := NewSupport(tc.email, tc.name, tc.password, tc.salt)
+			svc, err := support.NewSupport(tc.email, tc.name, tc.password, tc.salt)
 			tc.expect(t, svc, err)
 		})
 	}

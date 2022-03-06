@@ -1,10 +1,11 @@
-package support
+package support_test
 
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
+	"noname-realtime-support-chat/internal/support"
 	"testing"
 )
 
@@ -17,14 +18,14 @@ func TestNewRepository(t *testing.T) {
 		db     *mongo.Client
 		dbName string
 		logger *zap.SugaredLogger
-		expect func(*testing.T, Repository, error)
+		expect func(*testing.T, support.Repository, error)
 	}{
 		{
 			name:   "should return repository",
 			db:     &mongo.Client{},
 			dbName: "Chat",
 			logger: &zap.SugaredLogger{},
-			expect: func(t *testing.T, r Repository, err error) {
+			expect: func(t *testing.T, r support.Repository, err error) {
 				assert.NotNil(t, r)
 				assert.Nil(t, err)
 			},
@@ -34,7 +35,7 @@ func TestNewRepository(t *testing.T) {
 			db:     nil,
 			dbName: "Chat",
 			logger: &zap.SugaredLogger{},
-			expect: func(t *testing.T, r Repository, err error) {
+			expect: func(t *testing.T, r support.Repository, err error) {
 				assert.Nil(t, r)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "invalid support database")
@@ -45,7 +46,7 @@ func TestNewRepository(t *testing.T) {
 			db:     &mongo.Client{},
 			dbName: "",
 			logger: &zap.SugaredLogger{},
-			expect: func(t *testing.T, r Repository, err error) {
+			expect: func(t *testing.T, r support.Repository, err error) {
 				assert.Nil(t, r)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "invalid database name")
@@ -56,7 +57,7 @@ func TestNewRepository(t *testing.T) {
 			db:     &mongo.Client{},
 			dbName: "Chat",
 			logger: nil,
-			expect: func(t *testing.T, r Repository, err error) {
+			expect: func(t *testing.T, r support.Repository, err error) {
 				assert.Nil(t, r)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "invalid logger")
@@ -66,7 +67,7 @@ func TestNewRepository(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			svc, err := NewRepository(tc.db, tc.dbName, tc.logger)
+			svc, err := support.NewRepository(tc.db, tc.dbName, tc.logger)
 			tc.expect(t, svc, err)
 		})
 	}
