@@ -1,0 +1,41 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: chat-mongodb
+    restart: on-failure
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
+    volumes:
+      - ./dataDB/.mongodb-tmp:/data/db
+    networks:
+      - chat
+
+  backend:
+    build:
+      context: ../noname-realtime-support-chat
+      dockerfile: Dockerfile
+    container_name: chat-backend
+    restart: on-failure
+    depends_on:
+      - mongodb
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./dataAPP:/app
+
+    environment:
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MONGO_DB_URL=mongodb://chat-mongodb:27017/Chat
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRY=${JWT_EXPIRY}
+      - SALT=${SALT}
+      - PORT=${PORT}
+    networks:
+      - chat
+
+networks:
+  chat:
+    driver: bridge
