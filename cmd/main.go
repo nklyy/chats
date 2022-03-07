@@ -11,7 +11,7 @@ import (
 	"noname-realtime-support-chat/config"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/internal/support"
-	"noname-realtime-support-chat/pkg/jwt"
+	"noname-realtime-support-chat/internal/support/jwt"
 	"noname-realtime-support-chat/pkg/logger"
 	"noname-realtime-support-chat/pkg/mongodb"
 	"syscall"

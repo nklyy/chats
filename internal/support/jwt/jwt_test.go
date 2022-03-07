@@ -3,7 +3,7 @@ package jwt_test
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"noname-realtime-support-chat/pkg/jwt"
+	"noname-realtime-support-chat/internal/support/jwt"
 	"testing"
 )
 

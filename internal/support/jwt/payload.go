@@ -6,7 +6,7 @@ import (
 )
 
 type Payload struct {
-	Name      string    `json:"name"`
+	Email     string    `json:"email"`
 	Role      string    `json:"role"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`

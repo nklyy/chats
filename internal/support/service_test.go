@@ -7,9 +7,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"noname-realtime-support-chat/internal/support"
+	"noname-realtime-support-chat/internal/support/jwt"
+	"noname-realtime-support-chat/internal/support/jwt/mocks"
 	mock_support "noname-realtime-support-chat/internal/support/mocks"
-	"noname-realtime-support-chat/pkg/jwt"
-	mock_jwt "noname-realtime-support-chat/pkg/jwt/mocks"
 	"noname-realtime-support-chat/pkg/logger"
 	"testing"
 )
@@ -260,7 +260,7 @@ func TestService_Login(t *testing.T) {
 			},
 			setup: func(ctx context.Context, dto *support.LoginDTO) {
 				mockRepo.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(supportEntity, nil)
-				mockJwt.EXPECT().CreateJWT(supportEntity.Name, "support").Return(&token, nil)
+				mockJwt.EXPECT().CreateJWT(supportEntity.Email, "support").Return(&token, nil)
 			},
 			expect: func(t *testing.T, s *string, err error) {
 				assert.NotNil(t, s)
@@ -293,7 +293,7 @@ func TestService_Login(t *testing.T) {
 			},
 			setup: func(ctx context.Context, dto *support.LoginDTO) {
 				mockRepo.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(supportEntity, nil)
-				mockJwt.EXPECT().CreateJWT(supportEntity.Name, "support").Return(&emptyStr, errors.New("failed to create jwt token"))
+				mockJwt.EXPECT().CreateJWT(supportEntity.Email, "support").Return(&emptyStr, errors.New("failed to create jwt token"))
 			},
 			expect: func(t *testing.T, s *string, err error) {
 				assert.Empty(t, s)

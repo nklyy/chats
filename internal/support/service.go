@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/pkg/jwt"
+	"noname-realtime-support-chat/internal/support/jwt"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
@@ -79,7 +79,7 @@ func (s *service) Login(ctx context.Context, dto *LoginDTO) (*string, error) {
 		return nil, err
 	}
 
-	token, err := s.jwtSvc.CreateJWT(support.Name, "support")
+	token, err := s.jwtSvc.CreateJWT(dto.Email, "support")
 	if err != nil {
 		s.logger.Errorf("failed to create jwt token %v", err)
 		return nil, err

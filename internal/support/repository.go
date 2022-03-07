@@ -100,3 +100,15 @@ func (r *repository) CreateSupport(ctx context.Context, support *Support) (strin
 
 	return support.ID.Hex(), nil
 }
+
+func (r *repository) UpdateSupport(ctx context.Context, support *Support) error {
+	_, err := r.db.Database(r.dbName).Collection("support").UpdateOne(ctx, bson.M{"email": support.Email},
+		bson.D{primitive.E{Key: "$set", Value: support}})
+
+	if err != nil {
+		r.logger.Errorf("failed to update support %v", err)
+		return err
+	}
+
+	return nil
+}

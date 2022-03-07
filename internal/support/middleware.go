@@ -4,8 +4,8 @@ import (
 	gerrors "errors"
 	"go.uber.org/zap"
 	"net/http"
+	"noname-realtime-support-chat/internal/support/jwt"
 	"noname-realtime-support-chat/pkg/errors"
-	"noname-realtime-support-chat/pkg/jwt"
 	"noname-realtime-support-chat/pkg/respond"
 	"strings"
 )

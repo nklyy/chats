@@ -5,7 +5,7 @@
 package mock_jwt
 
 import (
-	jwt "noname-realtime-support-chat/pkg/jwt"
+	"noname-realtime-support-chat/internal/support/jwt"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,18 +35,18 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // CreateJWT mocks base method.
-func (m *MockService) CreateJWT(name, role string) (*string, error) {
+func (m *MockService) CreateJWT(email, role string) (*string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateJWT", name, role)
+	ret := m.ctrl.Call(m, "CreateJWT", email, role)
 	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateJWT indicates an expected call of CreateJWT.
-func (mr *MockServiceMockRecorder) CreateJWT(name, role interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) CreateJWT(email, role interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJWT", reflect.TypeOf((*MockService)(nil).CreateJWT), name, role)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJWT", reflect.TypeOf((*MockService)(nil).CreateJWT), email, role)
 }
 
 // VerifyJWT mocks base method.

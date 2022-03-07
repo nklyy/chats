@@ -8,7 +8,7 @@ import (
 
 //go:generate mockgen -source=jwt.go -destination=mocks/jwt_mock.go
 type Service interface {
-	CreateJWT(name, role string) (*string, error)
+	CreateJWT(email, role string) (*string, error)
 	VerifyJWT(token string) (*Payload, error)
 }
 
@@ -27,10 +27,10 @@ func NewJwtService(secretKey string, expiry *int) (Service, error) {
 	return &service{secretKey: secretKey, expiry: *expiry}, nil
 }
 
-func (s *service) CreateJWT(name, role string) (*string, error) {
+func (s *service) CreateJWT(email, role string) (*string, error) {
 	// create JWT
 	payload := &Payload{
-		Name:      name,
+		Email:     email,
 		Role:      role,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(time.Minute * time.Duration(s.expiry)),
