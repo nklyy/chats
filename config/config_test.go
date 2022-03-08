@@ -16,6 +16,8 @@ func TestInit(t *testing.T) {
 		salt        string
 		jwtSecret   string
 		jwtExpiry   string
+		redisHost   string
+		redisPort   string
 	}
 
 	type args struct {
@@ -30,6 +32,8 @@ func TestInit(t *testing.T) {
 		os.Setenv("SALT", env.salt)
 		os.Setenv("JWT_SECRET", env.jwtSecret)
 		os.Setenv("JWT_EXPIRY", env.jwtExpiry)
+		os.Setenv("REDIS_HOST", env.redisHost)
+		os.Setenv("REDIS_PORT", env.redisPort)
 	}
 
 	tests := []struct {
@@ -49,6 +53,8 @@ func TestInit(t *testing.T) {
 					salt:        "11",
 					jwtSecret:   "jwt",
 					jwtExpiry:   "100",
+					redisHost:   "localhost",
+					redisPort:   "1234",
 				},
 			},
 			want: &config.Config{
@@ -59,6 +65,8 @@ func TestInit(t *testing.T) {
 				Salt:        11,
 				JwtSecret:   "jwt",
 				JwtExpiry:   100,
+				RedisHost:   "localhost",
+				RedisPort:   "1234",
 			},
 		},
 	}

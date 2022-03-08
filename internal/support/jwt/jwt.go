@@ -2,9 +2,18 @@ package jwt
 
 import (
 	"errors"
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
 	"time"
 )
+
+type Payload struct {
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	IssuedAt  time.Time `json:"issued_at"`
+	ExpiredAt time.Time `json:"expired_at"`
+	jwt.StandardClaims
+}
 
 //go:generate mockgen -source=jwt.go -destination=mocks/jwt_mock.go
 type Service interface {
@@ -13,18 +22,22 @@ type Service interface {
 }
 
 type service struct {
-	secretKey string
-	expiry    int
+	secretKey   string
+	expiry      int
+	redisClient *redis.Client
 }
 
-func NewJwtService(secretKey string, expiry *int) (Service, error) {
+func NewJwtService(secretKey string, expiry *int, redisClient *redis.Client) (Service, error) {
 	if secretKey == "" {
 		return nil, errors.New("invalid jwt secret key")
 	}
 	if expiry == nil {
 		return nil, errors.New("invalid jwt expiry")
 	}
-	return &service{secretKey: secretKey, expiry: *expiry}, nil
+	if redisClient == nil {
+		return nil, errors.New("invalid redis client")
+	}
+	return &service{secretKey: secretKey, expiry: *expiry, redisClient: redisClient}, nil
 }
 
 func (s *service) CreateJWT(email, role string) (*string, error) {

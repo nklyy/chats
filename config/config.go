@@ -13,6 +13,8 @@ type Config struct {
 	Salt        int    `mapstructure:"SALT"`
 	JwtSecret   string `mapstructure:"JWT_SECRET"`
 	JwtExpiry   int    `mapstructure:"JWT_EXPIRY"`
+	RedisHost   string `mapstructure:"REDIS_HOST"`
+	RedisPort   string `mapstructure:"REDIS_PORT"`
 }
 
 func Get(path string) (*Config, error) {

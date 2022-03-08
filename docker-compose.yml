@@ -5,11 +5,22 @@ services:
     container_name: chat-mongodb
     restart: on-failure
     ports:
-      - "27017:27017"
+      - ${MONGO_PORT}:${MONGO_PORT}
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
     volumes:
-      - ./dataDB/.mongodb-tmp:/data/db
+      - ./dataDb/.mongodb-tmp:/data/db
+    networks:
+      - chat
+
+  redisdb:
+    image: redis:latest
+    container_name: chat-redis
+    restart: on-failure
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    volumes:
+      - ./dataRedis:/data
     networks:
       - chat
 
@@ -21,14 +32,15 @@ services:
     restart: on-failure
     depends_on:
       - mongodb
+      - redisdb
     ports:
-      - "5000:5000"
+      - ${APP_PORT}:${APP_PORT}
     volumes:
-      - ./dataAPP:/app
+      - ./dataApp:/app
 
     environment:
       - MONGO_DB_NAME=${MONGO_DB_NAME}
-      - MONGO_DB_URL=mongodb://chat-mongodb:27017/Chat
+      - MONGO_DB_URL=mongodb://chat-mongodb:${MONGO_PORT}/${MONGO_DB_NAME}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRY=${JWT_EXPIRY}
       - SALT=${SALT}

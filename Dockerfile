@@ -4,7 +4,7 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64
 
-WORKDIR /build
+WORKDIR /app
 COPY go.mod .
 COPY go.sum .
 RUN go mod download
@@ -14,4 +14,4 @@ COPY . .
 ENV APP_ENV=production
 RUN go build -o ./cmd/main ./cmd/main.go
 
-CMD ["/build/cmd/main"]
+CMD ["/app/cmd/main"]
