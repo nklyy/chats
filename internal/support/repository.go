@@ -95,7 +95,7 @@ func (r *repository) CreateSupport(ctx context.Context, support *Support) (strin
 		}
 
 		r.logger.Errorf("failed to insert support data to db: %v", err)
-		return "", err
+		return "", ErrFailedSaveSupport
 	}
 
 	return support.ID.Hex(), nil
@@ -107,7 +107,7 @@ func (r *repository) UpdateSupport(ctx context.Context, support *Support) error 
 
 	if err != nil {
 		r.logger.Errorf("failed to update support %v", err)
-		return err
+		return ErrFailedUpdateSupport
 	}
 
 	return nil

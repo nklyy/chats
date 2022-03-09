@@ -13,10 +13,9 @@ func NewClient(host, port string) (*redis.Client, error) {
 		Addr: addr,
 	})
 
-	status := client.Ping(context.Background())
-
-	if status.Err() != nil {
-		return nil, status.Err()
+	err := client.Ping(context.Background()).Err()
+	if err != nil {
+		return nil, err
 	}
 
 	return client, nil

@@ -9,15 +9,18 @@ import (
 
 func TestInit(t *testing.T) {
 	type env struct {
-		port        string
-		environment string
-		mongoDbName string
-		mongoDbUrl  string
-		salt        string
-		jwtSecret   string
-		jwtExpiry   string
-		redisHost   string
-		redisPort   string
+		port             string
+		environment      string
+		mongoDbName      string
+		mongoDbUrl       string
+		salt             string
+		jwtSecretAccess  string
+		jwtExpiryAccess  string
+		jwtSecretRefresh string
+		jwtExpiryRefresh string
+		autoLogout       string
+		redisHost        string
+		redisPort        string
 	}
 
 	type args struct {
@@ -30,8 +33,11 @@ func TestInit(t *testing.T) {
 		os.Setenv("MONGO_DB_NAME", env.mongoDbName)
 		os.Setenv("MONGO_DB_URL", env.mongoDbUrl)
 		os.Setenv("SALT", env.salt)
-		os.Setenv("JWT_SECRET", env.jwtSecret)
-		os.Setenv("JWT_EXPIRY", env.jwtExpiry)
+		os.Setenv("JWT_SECRET_ACCESS", env.jwtSecretAccess)
+		os.Setenv("JWT_EXPIRY_ACCESS", env.jwtExpiryAccess)
+		os.Setenv("JWT_SECRET_REFRESH", env.jwtSecretRefresh)
+		os.Setenv("JWT_EXPIRY_REFRESH", env.jwtExpiryRefresh)
+		os.Setenv("AUTO_LOGOUT", env.autoLogout)
 		os.Setenv("REDIS_HOST", env.redisHost)
 		os.Setenv("REDIS_PORT", env.redisPort)
 	}
@@ -46,27 +52,33 @@ func TestInit(t *testing.T) {
 			name: "Test config file!",
 			args: args{
 				env: env{
-					port:        ":5000",
-					environment: "development",
-					mongoDbName: "example",
-					mongoDbUrl:  "http://127.0.0.1",
-					salt:        "11",
-					jwtSecret:   "jwt",
-					jwtExpiry:   "100",
-					redisHost:   "localhost",
-					redisPort:   "1234",
+					port:             ":5000",
+					environment:      "development",
+					mongoDbName:      "example",
+					mongoDbUrl:       "http://127.0.0.1",
+					salt:             "11",
+					jwtSecretAccess:  "jwt",
+					jwtExpiryAccess:  "100",
+					jwtSecretRefresh: "asd",
+					jwtExpiryRefresh: "300",
+					autoLogout:       "3",
+					redisHost:        "localhost",
+					redisPort:        "1234",
 				},
 			},
 			want: &config.Config{
-				PORT:        ":5000",
-				Environment: "development",
-				MongoDbName: "example",
-				MongoDbUrl:  "http://127.0.0.1",
-				Salt:        11,
-				JwtSecret:   "jwt",
-				JwtExpiry:   100,
-				RedisHost:   "localhost",
-				RedisPort:   "1234",
+				PORT:             ":5000",
+				Environment:      "development",
+				MongoDbName:      "example",
+				MongoDbUrl:       "http://127.0.0.1",
+				Salt:             11,
+				JwtSecretAccess:  "jwt",
+				JwtExpiryAccess:  100,
+				JwtSecretRefresh: "asd",
+				JwtExpiryRefresh: 300,
+				AutoLogout:       3,
+				RedisHost:        "localhost",
+				RedisPort:        "1234",
 			},
 		},
 	}

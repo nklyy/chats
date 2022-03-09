@@ -24,6 +24,8 @@ func NewHandler(supportSvc Service) (*Handler, error) {
 func (h *Handler) SetupAuthRoutes(router chi.Router) {
 	router.Post("/support/registration", h.Registration)
 	router.Post("/support/login", h.Login)
+	router.Post("/support/refresh", h.Refresh)
+	router.Post("/support/logout", h.Logout)
 }
 
 func (h *Handler) SetupRoutes(router chi.Router) {
@@ -61,7 +63,9 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond.Respond(w, http.StatusCreated, map[string]string{"id": *supportId})
+	respond.Respond(w, http.StatusCreated, RegistrationResponseDTO{
+		Id: *supportId,
+	})
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -77,11 +81,61 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.supportSvc.Login(r.Context(), &dto)
+	accessToken, refreshToken, err := h.supportSvc.Login(r.Context(), &dto)
 	if err != nil {
 		respond.Respond(w, errors.HTTPCode(err), err)
 		return
 	}
 
-	respond.Respond(w, http.StatusOK, map[string]string{"token": *token})
+	respond.Respond(w, http.StatusOK, &LoginResponseDTO{
+		AccessToken:  *accessToken,
+		RefreshToken: *refreshToken,
+	})
+}
+
+func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
+	var dto RefreshDTO
+
+	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
+		respond.Respond(w, errors.HTTPCode(err), errors.NewInternal(err.Error()))
+		return
+	}
+
+	if err := Validate(dto); err != nil {
+		respond.Respond(w, errors.HTTPCode(err), err)
+		return
+	}
+
+	accessToken, refreshToken, err := h.supportSvc.Refresh(r.Context(), &dto)
+	if err != nil {
+		respond.Respond(w, errors.HTTPCode(err), err)
+		return
+	}
+
+	respond.Respond(w, http.StatusOK, LoginResponseDTO{
+		AccessToken:  *accessToken,
+		RefreshToken: *refreshToken,
+	})
+}
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	var dto LogoutDTO
+
+	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
+		respond.Respond(w, errors.HTTPCode(err), errors.NewInternal(err.Error()))
+		return
+	}
+
+	if err := Validate(dto); err != nil {
+		respond.Respond(w, errors.HTTPCode(err), err)
+		return
+	}
+
+	err := h.supportSvc.Logout(r.Context(), &dto)
+	if err != nil {
+		respond.Respond(w, errors.HTTPCode(err), err)
+		return
+	}
+
+	respond.Respond(w, http.StatusOK, "OK")
 }

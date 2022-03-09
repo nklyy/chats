@@ -41,8 +41,11 @@ services:
     environment:
       - MONGO_DB_NAME=${MONGO_DB_NAME}
       - MONGO_DB_URL=mongodb://chat-mongodb:${MONGO_PORT}/${MONGO_DB_NAME}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRY=${JWT_EXPIRY}
+      - JWT_SECRET_ACCESS=${JWT_SECRET_ACCESS}
+      - JWT_EXPIRY_ACCESS=${JWT_EXPIRY_ACCESS}
+      - JWT_SECRET_REFRESH=${JWT_SECRET_REFRESH}
+      - JWT_EXPIRY_REFRESH=${JWT_EXPIRY_REFRESH}
+      - AUTO_LOGOUT=${AUTO_LOGOUT}
       - SALT=${SALT}
       - PORT=${PORT}
     networks:

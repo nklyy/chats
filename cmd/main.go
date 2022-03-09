@@ -60,6 +60,7 @@ func main() {
 	if err != nil {
 		zapLogger.Fatalf("failed to connect to redis %v", err)
 	}
+	zapLogger.Info("Redis connected successfully")
 
 	// Repositories
 	supportRepository, err := support.NewRepository(db, cfg.MongoDbName, zapLogger)
@@ -68,7 +69,13 @@ func main() {
 	}
 
 	// Services
-	jwtSvc, err := jwt.NewJwtService(cfg.JwtSecret, &cfg.JwtExpiry, redisClient)
+	jwtSvc, err := jwt.NewJwtService(
+		cfg.JwtSecretAccess,
+		&cfg.JwtExpiryAccess,
+		cfg.JwtSecretRefresh,
+		&cfg.JwtExpiryRefresh,
+		&cfg.AutoLogout,
+		redisClient)
 	if err != nil {
 		zapLogger.Fatalf("failde to jwt service: %v", err)
 	}
