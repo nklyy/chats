@@ -241,7 +241,8 @@ func TestService_Login(t *testing.T) {
 	service, _ := support.NewService(mockRepo, zapLogger, &salt, mockJwt)
 
 	supportEntity, _ := support.NewSupport("email", "name", "password", &salt)
-	token := "token"
+	tokenAccess := "tokenAccess"
+	tokenRefresh := "tokenRefresh"
 	var emptyStr string
 
 	tests := []struct {
@@ -249,7 +250,7 @@ func TestService_Login(t *testing.T) {
 		ctx    context.Context
 		dto    *support.LoginDTO
 		setup  func(context.Context, *support.LoginDTO)
-		expect func(*testing.T, *string, error)
+		expect func(*testing.T, *string, *string, error)
 	}{
 		{
 			name: "should return jwt token",
@@ -260,12 +261,14 @@ func TestService_Login(t *testing.T) {
 			},
 			setup: func(ctx context.Context, dto *support.LoginDTO) {
 				mockRepo.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(supportEntity, nil)
-				mockJwt.EXPECT().CreateJWT(supportEntity.Email, "support").Return(&token, nil)
+				mockJwt.EXPECT().CreateTokens(ctx, supportEntity.ID.Hex(), "support").Return(&tokenAccess, &tokenRefresh, nil)
 			},
-			expect: func(t *testing.T, s *string, err error) {
-				assert.NotNil(t, s)
+			expect: func(t *testing.T, a *string, r *string, err error) {
+				assert.NotNil(t, a)
+				assert.NotNil(t, r)
 				assert.Nil(t, err)
-				assert.Equal(t, *s, token)
+				assert.Equal(t, *a, tokenAccess)
+				assert.Equal(t, *r, tokenRefresh)
 			},
 		},
 		{
@@ -278,8 +281,9 @@ func TestService_Login(t *testing.T) {
 			setup: func(ctx context.Context, dto *support.LoginDTO) {
 				mockRepo.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(nil, errors.New("failed to find support"))
 			},
-			expect: func(t *testing.T, s *string, err error) {
-				assert.Empty(t, s)
+			expect: func(t *testing.T, a *string, r *string, err error) {
+				assert.Empty(t, a)
+				assert.Empty(t, r)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "failed to find support")
 			},
@@ -293,10 +297,11 @@ func TestService_Login(t *testing.T) {
 			},
 			setup: func(ctx context.Context, dto *support.LoginDTO) {
 				mockRepo.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(supportEntity, nil)
-				mockJwt.EXPECT().CreateJWT(supportEntity.Email, "support").Return(&emptyStr, errors.New("failed to create jwt token"))
+				mockJwt.EXPECT().CreateTokens(ctx, supportEntity.ID.Hex(), "support").Return(&emptyStr, &emptyStr, errors.New("failed to create jwt token"))
 			},
-			expect: func(t *testing.T, s *string, err error) {
-				assert.Empty(t, s)
+			expect: func(t *testing.T, a *string, r *string, err error) {
+				assert.Empty(t, a)
+				assert.Empty(t, r)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "failed to create jwt token")
 			},
@@ -306,8 +311,8 @@ func TestService_Login(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup(tc.ctx, tc.dto)
-			s, err := service.Login(tc.ctx, tc.dto)
-			tc.expect(t, s, err)
+			a, r, err := service.Login(tc.ctx, tc.dto)
+			tc.expect(t, a, r, err)
 		})
 	}
 }

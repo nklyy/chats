@@ -48,13 +48,13 @@ func NewJwtService(secretKeyAccess string,
 	autoLogout *int,
 	redisClient *redis.Client) (Service, error) {
 	if secretKeyAccess == "" {
-		return nil, errors.New("invalid jwt secret key access")
+		return nil, errors.New("invalid jwt access secret key")
 	}
 	if expiryAccess == nil {
 		return nil, errors.New("invalid jwt expiry access")
 	}
 	if secretKeyRefresh == "" {
-		return nil, errors.New("invalid jwt secret key refresh")
+		return nil, errors.New("invalid jwt refresh secret key")
 	}
 	if expiryRefresh == nil {
 		return nil, errors.New("invalid jwt expiry refresh")

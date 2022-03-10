@@ -5,7 +5,8 @@
 package mock_jwt
 
 import (
-	"noname-realtime-support-chat/internal/support/jwt"
+	context "context"
+	jwt "noname-realtime-support-chat/internal/support/jwt"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,32 +35,75 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
-// CreateJWT mocks base method.
-func (m *MockService) CreateJWT(email, role string) (*string, error) {
+// CreateTokens mocks base method.
+func (m *MockService) CreateTokens(ctx context.Context, id, role string) (*string, *string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateJWT", email, role)
+	ret := m.ctrl.Call(m, "CreateTokens", ctx, id, role)
 	ret0, _ := ret[0].(*string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(*string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
-// CreateJWT indicates an expected call of CreateJWT.
-func (mr *MockServiceMockRecorder) CreateJWT(email, role interface{}) *gomock.Call {
+// CreateTokens indicates an expected call of CreateTokens.
+func (mr *MockServiceMockRecorder) CreateTokens(ctx, id, role interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJWT", reflect.TypeOf((*MockService)(nil).CreateJWT), email, role)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTokens", reflect.TypeOf((*MockService)(nil).CreateTokens), ctx, id, role)
 }
 
-// VerifyJWT mocks base method.
-func (m *MockService) VerifyJWT(token string) (*jwt.Payload, error) {
+// DeleteTokens mocks base method.
+func (m *MockService) DeleteTokens(ctx context.Context, payload *jwt.Payload) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyJWT", token)
+	ret := m.ctrl.Call(m, "DeleteTokens", ctx, payload)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTokens indicates an expected call of DeleteTokens.
+func (mr *MockServiceMockRecorder) DeleteTokens(ctx, payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTokens", reflect.TypeOf((*MockService)(nil).DeleteTokens), ctx, payload)
+}
+
+// ExtendExpire mocks base method.
+func (m *MockService) ExtendExpire(ctx context.Context, payload *jwt.Payload) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExtendExpire", ctx, payload)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExtendExpire indicates an expected call of ExtendExpire.
+func (mr *MockServiceMockRecorder) ExtendExpire(ctx, payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExtendExpire", reflect.TypeOf((*MockService)(nil).ExtendExpire), ctx, payload)
+}
+
+// ParseToken mocks base method.
+func (m *MockService) ParseToken(token string, isAccess bool) (*jwt.Payload, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseToken", token, isAccess)
 	ret0, _ := ret[0].(*jwt.Payload)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// VerifyJWT indicates an expected call of VerifyJWT.
-func (mr *MockServiceMockRecorder) VerifyJWT(token interface{}) *gomock.Call {
+// ParseToken indicates an expected call of ParseToken.
+func (mr *MockServiceMockRecorder) ParseToken(token, isAccess interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyJWT", reflect.TypeOf((*MockService)(nil).VerifyJWT), token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseToken", reflect.TypeOf((*MockService)(nil).ParseToken), token, isAccess)
+}
+
+// VerifyToken mocks base method.
+func (m *MockService) VerifyToken(ctx context.Context, payload *jwt.Payload, isAccess bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyToken", ctx, payload, isAccess)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyToken indicates an expected call of VerifyToken.
+func (mr *MockServiceMockRecorder) VerifyToken(ctx, payload, isAccess interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyToken", reflect.TypeOf((*MockService)(nil).VerifyToken), ctx, payload, isAccess)
 }
