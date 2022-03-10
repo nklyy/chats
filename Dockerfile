@@ -1,8 +1,5 @@
 FROM golang:1.17 AS base
-ENV GO111MODULE=on \
-    CGO_ENABLED=0 \
-    GOOS=linux \
-    GOARCH=amd64
+ENV CGO_ENABLED=0
 
 WORKDIR /app
 COPY go.mod .

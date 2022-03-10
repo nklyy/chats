@@ -2,7 +2,7 @@ package support_test
 
 import (
 	"context"
-	"errors"
+	gjwt "github.com/golang-jwt/jwt"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -207,12 +207,12 @@ func TestService_Registration(t *testing.T) {
 				Password: "password",
 			},
 			setup: func(ctx context.Context, dto *support.RegistrationDTO) {
-				mockRepo.EXPECT().CreateSupport(ctx, gomock.Any()).Return(emptyStr, errors.New("failed to save support"))
+				mockRepo.EXPECT().CreateSupport(ctx, gomock.Any()).Return(emptyStr, support.ErrFailedSaveSupport)
 			},
 			expect: func(t *testing.T, s *string, err error) {
 				assert.Empty(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "failed to save support")
+				assert.EqualError(t, err, support.ErrFailedSaveSupport.Error())
 			},
 		},
 	}
@@ -279,13 +279,13 @@ func TestService_Login(t *testing.T) {
 				Password: "password",
 			},
 			setup: func(ctx context.Context, dto *support.LoginDTO) {
-				mockRepo.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(nil, errors.New("failed to find support"))
+				mockRepo.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(nil, support.ErrNotFound)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.Empty(t, a)
 				assert.Empty(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "failed to find support")
+				assert.EqualError(t, err, support.ErrNotFound.Error())
 			},
 		},
 		{
@@ -297,13 +297,13 @@ func TestService_Login(t *testing.T) {
 			},
 			setup: func(ctx context.Context, dto *support.LoginDTO) {
 				mockRepo.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(supportEntity, nil)
-				mockJwt.EXPECT().CreateTokens(ctx, supportEntity.ID.Hex(), "support").Return(&emptyStr, &emptyStr, errors.New("failed to create jwt token"))
+				mockJwt.EXPECT().CreateTokens(ctx, supportEntity.ID.Hex(), "support").Return(&emptyStr, &emptyStr, jwt.ErrFailedCreateTokens)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.Empty(t, a)
 				assert.Empty(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "failed to create jwt token")
+				assert.EqualError(t, err, jwt.ErrFailedCreateTokens.Error())
 			},
 		},
 	}
@@ -313,6 +313,217 @@ func TestService_Login(t *testing.T) {
 			tc.setup(tc.ctx, tc.dto)
 			a, r, err := service.Login(tc.ctx, tc.dto)
 			tc.expect(t, a, r, err)
+		})
+	}
+}
+
+func TestService_Refresh(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockRepo := mock_support.NewMockRepository(controller)
+	mockJwt := mock_jwt.NewMockService(controller)
+
+	salt := 10
+
+	newLogger, _ := logger.NewLogger("development")
+	zapLogger, _ := newLogger.SetupZapLogger()
+
+	service, _ := support.NewService(mockRepo, zapLogger, &salt, mockJwt)
+
+	payload := jwt.Payload{
+		Id:             "id",
+		Role:           "role",
+		Uid:            "uid",
+		StandardClaims: gjwt.StandardClaims{},
+	}
+	tokenAccess := "tokenAccess"
+	tokenRefresh := "tokenRefresh"
+	var emptyStr string
+
+	tests := []struct {
+		name   string
+		ctx    context.Context
+		dto    *support.RefreshDTO
+		setup  func(context.Context, *support.RefreshDTO)
+		expect func(*testing.T, *string, *string, error)
+	}{
+		{
+			name: "should return tokens",
+			ctx:  context.Background(),
+			dto: &support.RefreshDTO{
+				Token: "token",
+			},
+			setup: func(ctx context.Context, dto *support.RefreshDTO) {
+				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(&payload, nil)
+				mockJwt.EXPECT().VerifyToken(ctx, &payload, false).Return(nil)
+				mockJwt.EXPECT().CreateTokens(ctx, payload.Id, "support").Return(&tokenAccess, &tokenRefresh, nil)
+			},
+			expect: func(t *testing.T, a *string, r *string, err error) {
+				assert.NotNil(t, a)
+				assert.NotNil(t, r)
+				assert.Nil(t, err)
+				assert.Equal(t, *a, tokenAccess)
+				assert.Equal(t, *r, tokenRefresh)
+			},
+		},
+		{
+			name: "should return failed parse token",
+			ctx:  context.Background(),
+			dto: &support.RefreshDTO{
+				Token: "token",
+			},
+			setup: func(ctx context.Context, dto *support.RefreshDTO) {
+				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(nil, jwt.ErrToken)
+			},
+			expect: func(t *testing.T, a *string, r *string, err error) {
+				assert.Empty(t, a)
+				assert.Empty(t, r)
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, jwt.ErrToken.Error())
+			},
+		},
+		{
+			name: "should return failed to verify token",
+			ctx:  context.Background(),
+			dto: &support.RefreshDTO{
+				Token: "token",
+			},
+			setup: func(ctx context.Context, dto *support.RefreshDTO) {
+				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(&payload, nil)
+				mockJwt.EXPECT().VerifyToken(ctx, &payload, false).Return(jwt.ErrNotFound)
+			},
+			expect: func(t *testing.T, a *string, r *string, err error) {
+				assert.Empty(t, a)
+				assert.Empty(t, r)
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, jwt.ErrNotFound.Error())
+			},
+		},
+		{
+			name: "should return failed to create jwt token",
+			ctx:  context.Background(),
+			dto: &support.RefreshDTO{
+				Token: "token",
+			},
+			setup: func(ctx context.Context, dto *support.RefreshDTO) {
+				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(&payload, nil)
+				mockJwt.EXPECT().VerifyToken(ctx, &payload, false).Return(nil)
+				mockJwt.EXPECT().CreateTokens(ctx, payload.Id, "support").Return(&emptyStr, &emptyStr, jwt.ErrFailedCreateTokens)
+			},
+			expect: func(t *testing.T, a *string, r *string, err error) {
+				assert.Empty(t, a)
+				assert.Empty(t, r)
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, jwt.ErrFailedCreateTokens.Error())
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setup(tc.ctx, tc.dto)
+			a, r, err := service.Refresh(tc.ctx, tc.dto)
+			tc.expect(t, a, r, err)
+		})
+	}
+}
+
+func TestService_Logout(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	mockRepo := mock_support.NewMockRepository(controller)
+	mockJwt := mock_jwt.NewMockService(controller)
+
+	salt := 10
+
+	newLogger, _ := logger.NewLogger("development")
+	zapLogger, _ := newLogger.SetupZapLogger()
+
+	service, _ := support.NewService(mockRepo, zapLogger, &salt, mockJwt)
+
+	payload := jwt.Payload{
+		Id:             "id",
+		Role:           "role",
+		Uid:            "uid",
+		StandardClaims: gjwt.StandardClaims{},
+	}
+
+	tests := []struct {
+		name   string
+		ctx    context.Context
+		dto    *support.LogoutDTO
+		setup  func(context.Context, *support.LogoutDTO)
+		expect func(*testing.T, error)
+	}{
+		{
+			name: "should logout support",
+			ctx:  context.Background(),
+			dto: &support.LogoutDTO{
+				Token: "token",
+			},
+			setup: func(ctx context.Context, dto *support.LogoutDTO) {
+				mockJwt.EXPECT().ParseToken(dto.Token, true).Return(&payload, nil)
+				mockJwt.EXPECT().VerifyToken(ctx, &payload, true).Return(nil)
+				mockJwt.EXPECT().DeleteTokens(ctx, &payload).Return(nil)
+			},
+			expect: func(t *testing.T, err error) {
+				assert.Nil(t, err)
+			},
+		},
+		{
+			name: "should failed parse token",
+			ctx:  context.Background(),
+			dto: &support.LogoutDTO{
+				Token: "token",
+			},
+			setup: func(ctx context.Context, dto *support.LogoutDTO) {
+				mockJwt.EXPECT().ParseToken(dto.Token, true).Return(nil, jwt.ErrToken)
+			},
+			expect: func(t *testing.T, err error) {
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, jwt.ErrToken.Error())
+			},
+		},
+		{
+			name: "should failed to verify token",
+			ctx:  context.Background(),
+			dto: &support.LogoutDTO{
+				Token: "token",
+			},
+			setup: func(ctx context.Context, dto *support.LogoutDTO) {
+				mockJwt.EXPECT().ParseToken(dto.Token, true).Return(&payload, nil)
+				mockJwt.EXPECT().VerifyToken(ctx, &payload, true).Return(jwt.ErrNotFound)
+			},
+			expect: func(t *testing.T, err error) {
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, jwt.ErrNotFound.Error())
+			},
+		},
+		{
+			name: "should failed to delete tokens",
+			ctx:  context.Background(),
+			dto: &support.LogoutDTO{
+				Token: "token",
+			},
+			setup: func(ctx context.Context, dto *support.LogoutDTO) {
+				mockJwt.EXPECT().ParseToken(dto.Token, true).Return(&payload, nil)
+				mockJwt.EXPECT().VerifyToken(ctx, &payload, true).Return(nil)
+				mockJwt.EXPECT().DeleteTokens(ctx, &payload).Return(jwt.ErrFailedDeleteToken)
+			},
+			expect: func(t *testing.T, err error) {
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, jwt.ErrFailedDeleteToken.Error())
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setup(tc.ctx, tc.dto)
+			err := service.Logout(tc.ctx, tc.dto)
+			tc.expect(t, err)
 		})
 	}
 }

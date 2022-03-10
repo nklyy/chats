@@ -99,7 +99,7 @@ func (s *service) Refresh(ctx context.Context, dto *RefreshDTO) (*string, *strin
 		return nil, nil, err
 	}
 
-	err = s.jwtSvc.VerifyToken(ctx, payload, true)
+	err = s.jwtSvc.VerifyToken(ctx, payload, false)
 	if err != nil {
 		s.logger.Errorf("failed to verify token %v", err)
 		return nil, nil, err
@@ -121,7 +121,7 @@ func (s *service) Logout(ctx context.Context, dto *LogoutDTO) error {
 		return err
 	}
 
-	err = s.jwtSvc.VerifyToken(ctx, payload, false)
+	err = s.jwtSvc.VerifyToken(ctx, payload, true)
 	if err != nil {
 		s.logger.Errorf("failed to verify token %v", err)
 		return err

@@ -56,7 +56,7 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		err = m.jwtSvc.VerifyToken(r.Context(), payload, false)
+		err = m.jwtSvc.VerifyToken(r.Context(), payload, true)
 		if err != nil {
 			m.logger.Errorf("failed to verify auth token: %v", err)
 			respond.Respond(w, errors.HTTPCode(err), err)
