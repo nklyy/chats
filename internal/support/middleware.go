@@ -4,8 +4,8 @@ import (
 	gerrors "errors"
 	"go.uber.org/zap"
 	"net/http"
+	"noname-realtime-support-chat/internal/support/jwt"
 	"noname-realtime-support-chat/pkg/errors"
-	"noname-realtime-support-chat/pkg/jwt"
 	"noname-realtime-support-chat/pkg/respond"
 	"strings"
 )
@@ -37,7 +37,7 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 
 		if len(authorization) == 0 {
 			m.logger.Error("failed to get auth token")
-			respond.Respond(w, errors.HTTPCode(ErrRequiredAuthorizationToken), ErrRequiredAuthorizationToken)
+			respond.Respond(w, errors.HTTPCode(ErrRequiredToken), ErrRequiredToken)
 			return
 		}
 
@@ -45,20 +45,34 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 
 		if len(authorizationParts) != 2 || len(authorizationParts[1]) == 0 || authorizationParts[0] != "Bearer" {
 			m.logger.Error("invalid auth token")
-			respond.Respond(w, errors.HTTPCode(ErrAuthorizationToken), ErrAuthorizationToken)
+			respond.Respond(w, errors.HTTPCode(ErrToken), ErrToken)
 			return
 		}
 
-		payload, err := m.jwtSvc.VerifyJWT(authorizationParts[1])
+		payload, err := m.jwtSvc.ParseToken(authorizationParts[1], true)
+		if err != nil {
+			m.logger.Errorf("failed to parse auth token: %v", err)
+			respond.Respond(w, errors.HTTPCode(err), err)
+			return
+		}
+
+		err = m.jwtSvc.VerifyToken(r.Context(), payload, true)
 		if err != nil {
 			m.logger.Errorf("failed to verify auth token: %v", err)
-			respond.Respond(w, errors.HTTPCode(ErrFailedVerifyAuthorizationToken), ErrFailedVerifyAuthorizationToken)
+			respond.Respond(w, errors.HTTPCode(err), err)
 			return
 		}
 
 		if payload.Role != "support" {
 			m.logger.Error("token doesn't have permission")
 			respond.Respond(w, errors.HTTPCode(ErrTokenDoesntHavePermission), ErrTokenDoesntHavePermission)
+			return
+		}
+
+		err = m.jwtSvc.ExtendExpire(r.Context(), payload)
+		if err != nil {
+			m.logger.Errorf("failed to extend expire token: %v", err)
+			respond.Respond(w, errors.HTTPCode(err), err)
 			return
 		}
 

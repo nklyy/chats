@@ -5,8 +5,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"noname-realtime-support-chat/internal/support"
-	"noname-realtime-support-chat/pkg/jwt"
-	mock_jwt "noname-realtime-support-chat/pkg/jwt/mocks"
+	"noname-realtime-support-chat/internal/support/jwt"
+	"noname-realtime-support-chat/internal/support/jwt/mocks"
 	"testing"
 )
 

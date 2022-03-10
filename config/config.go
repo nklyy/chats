@@ -6,13 +6,18 @@ import (
 )
 
 type Config struct {
-	PORT        string `mapstructure:"PORT"`
-	Environment string `mapstructure:"APP_ENV"`
-	MongoDbName string `mapstructure:"MONGO_DB_NAME"`
-	MongoDbUrl  string `mapstructure:"MONGO_DB_URL"`
-	Salt        int    `mapstructure:"SALT"`
-	JwtSecret   string `mapstructure:"JWT_SECRET"`
-	JwtExpiry   int    `mapstructure:"JWT_EXPIRY"`
+	PORT             string `mapstructure:"PORT"`
+	Environment      string `mapstructure:"APP_ENV"`
+	MongoDbName      string `mapstructure:"MONGO_DB_NAME"`
+	MongoDbUrl       string `mapstructure:"MONGO_DB_URL"`
+	Salt             int    `mapstructure:"SALT"`
+	JwtSecretAccess  string `mapstructure:"JWT_SECRET_ACCESS"`
+	JwtExpiryAccess  int    `mapstructure:"JWT_EXPIRY_ACCESS"`
+	JwtSecretRefresh string `mapstructure:"JWT_SECRET_REFRESH"`
+	JwtExpiryRefresh int    `mapstructure:"JWT_EXPIRY_REFRESH"`
+	AutoLogout       int    `mapstructure:"AUTO_LOGOUT"`
+	RedisHost        string `mapstructure:"REDIS_HOST"`
+	RedisPort        string `mapstructure:"REDIS_PORT"`
 }
 
 func Get(path string) (*Config, error) {

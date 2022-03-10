@@ -81,7 +81,24 @@ type RegistrationDTO struct {
 	Password string `json:"password" validate:"required,password"`
 }
 
+type RegistrationResponseDTO struct {
+	Id string `json:"id"`
+}
+
 type LoginDTO struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,password"`
+}
+
+type LoginResponseDTO struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RefreshDTO struct {
+	Token string `json:"token" validate:"required"`
+}
+
+type LogoutDTO struct {
+	Token string `json:"token" validate:"required"`
 }

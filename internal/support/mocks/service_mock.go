@@ -51,18 +51,49 @@ func (mr *MockServiceMockRecorder) GetSupportById(ctx, id interface{}) *gomock.C
 }
 
 // Login mocks base method.
-func (m *MockService) Login(ctx context.Context, dto *support.LoginDTO) (*string, error) {
+func (m *MockService) Login(ctx context.Context, dto *support.LoginDTO) (*string, *string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", ctx, dto)
 	ret0, _ := ret[0].(*string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(*string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // Login indicates an expected call of Login.
 func (mr *MockServiceMockRecorder) Login(ctx, dto interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockService)(nil).Login), ctx, dto)
+}
+
+// Logout mocks base method.
+func (m *MockService) Logout(ctx context.Context, dto *support.LogoutDTO) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Logout", ctx, dto)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Logout indicates an expected call of Logout.
+func (mr *MockServiceMockRecorder) Logout(ctx, dto interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockService)(nil).Logout), ctx, dto)
+}
+
+// Refresh mocks base method.
+func (m *MockService) Refresh(ctx context.Context, dto *support.RefreshDTO) (*string, *string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Refresh", ctx, dto)
+	ret0, _ := ret[0].(*string)
+	ret1, _ := ret[1].(*string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// Refresh indicates an expected call of Refresh.
+func (mr *MockServiceMockRecorder) Refresh(ctx, dto interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Refresh", reflect.TypeOf((*MockService)(nil).Refresh), ctx, dto)
 }
 
 // Registration mocks base method.

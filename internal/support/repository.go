@@ -95,8 +95,20 @@ func (r *repository) CreateSupport(ctx context.Context, support *Support) (strin
 		}
 
 		r.logger.Errorf("failed to insert support data to db: %v", err)
-		return "", err
+		return "", ErrFailedSaveSupport
 	}
 
 	return support.ID.Hex(), nil
+}
+
+func (r *repository) UpdateSupport(ctx context.Context, support *Support) error {
+	_, err := r.db.Database(r.dbName).Collection("support").UpdateOne(ctx, bson.M{"email": support.Email},
+		bson.D{primitive.E{Key: "$set", Value: support}})
+
+	if err != nil {
+		r.logger.Errorf("failed to update support %v", err)
+		return ErrFailedUpdateSupport
+	}
+
+	return nil
 }

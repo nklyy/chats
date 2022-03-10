@@ -4,14 +4,16 @@ import (
 	"context"
 	"errors"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/pkg/jwt"
+	"noname-realtime-support-chat/internal/support/jwt"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
-	Registration(ctx context.Context, dto *RegistrationDTO) (*string, error)
-	Login(ctx context.Context, dto *LoginDTO) (*string, error)
 	GetSupportById(ctx context.Context, id string) (*DTO, error)
+	Registration(ctx context.Context, dto *RegistrationDTO) (*string, error)
+	Login(ctx context.Context, dto *LoginDTO) (*string, *string, error)
+	Refresh(ctx context.Context, dto *RefreshDTO) (*string, *string, error)
+	Logout(ctx context.Context, dto *LogoutDTO) error
 }
 
 type service struct {
@@ -54,7 +56,7 @@ func (s *service) Registration(ctx context.Context, dto *RegistrationDTO) (*stri
 	support, err := NewSupport(dto.Email, dto.Name, dto.Password, &s.salt)
 	if err != nil {
 		s.logger.Errorf("failed to create new support %v", err)
-		return nil, err
+		return nil, ErrFailedCreateSupport
 	}
 
 	id, err := s.repository.CreateSupport(ctx, support)
@@ -66,26 +68,70 @@ func (s *service) Registration(ctx context.Context, dto *RegistrationDTO) (*stri
 	return &id, nil
 }
 
-func (s *service) Login(ctx context.Context, dto *LoginDTO) (*string, error) {
+func (s *service) Login(ctx context.Context, dto *LoginDTO) (*string, *string, error) {
 	support, err := s.repository.GetSupportByEmail(ctx, dto.Email)
 	if err != nil {
 		s.logger.Errorf("failed to find support %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	cp, err := support.CheckPassword(dto.Password)
 	if !cp {
 		s.logger.Errorf("failed to check password %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	token, err := s.jwtSvc.CreateJWT(support.Name, "support")
+	accessToken, refreshToken, err := s.jwtSvc.CreateTokens(ctx, support.ID.Hex(), "support")
 	if err != nil {
 		s.logger.Errorf("failed to create jwt token %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	support.SetOnline()
+	//support.SetOnline()
 
-	return token, nil
+	return accessToken, refreshToken, nil
+}
+
+func (s *service) Refresh(ctx context.Context, dto *RefreshDTO) (*string, *string, error) {
+	payload, err := s.jwtSvc.ParseToken(dto.Token, false)
+	if err != nil {
+		s.logger.Errorf("failed parse token %v", err)
+		return nil, nil, err
+	}
+
+	err = s.jwtSvc.VerifyToken(ctx, payload, false)
+	if err != nil {
+		s.logger.Errorf("failed to verify token %v", err)
+		return nil, nil, err
+	}
+
+	accessToken, refreshToken, err := s.jwtSvc.CreateTokens(ctx, payload.Id, "support")
+	if err != nil {
+		s.logger.Errorf("failed to create jwt token %v", err)
+		return nil, nil, err
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+func (s *service) Logout(ctx context.Context, dto *LogoutDTO) error {
+	payload, err := s.jwtSvc.ParseToken(dto.Token, true)
+	if err != nil {
+		s.logger.Errorf("failed parse token %v", err)
+		return err
+	}
+
+	err = s.jwtSvc.VerifyToken(ctx, payload, true)
+	if err != nil {
+		s.logger.Errorf("failed to verify token %v", err)
+		return err
+	}
+
+	err = s.jwtSvc.DeleteTokens(ctx, payload)
+	if err != nil {
+		s.logger.Errorf("failed to delete tokens %v", err)
+		return err
+	}
+
+	return nil
 }

@@ -11,9 +11,10 @@ import (
 	"noname-realtime-support-chat/config"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/internal/support"
-	"noname-realtime-support-chat/pkg/jwt"
+	"noname-realtime-support-chat/internal/support/jwt"
 	"noname-realtime-support-chat/pkg/logger"
 	"noname-realtime-support-chat/pkg/mongodb"
+	"noname-realtime-support-chat/pkg/redis"
 	"syscall"
 )
 
@@ -54,6 +55,13 @@ func main() {
 	}
 	zapLogger.Info("DB connected successfully")
 
+	// Redis
+	redisClient, err := redis.NewClient(cfg.RedisHost, cfg.RedisPort)
+	if err != nil {
+		zapLogger.Fatalf("failed to connect to redis %v", err)
+	}
+	zapLogger.Info("Redis connected successfully")
+
 	// Repositories
 	supportRepository, err := support.NewRepository(db, cfg.MongoDbName, zapLogger)
 	if err != nil {
@@ -61,7 +69,13 @@ func main() {
 	}
 
 	// Services
-	jwtSvc, err := jwt.NewJwtService(cfg.JwtSecret, &cfg.JwtExpiry)
+	jwtSvc, err := jwt.NewJwtService(
+		cfg.JwtSecretAccess,
+		&cfg.JwtExpiryAccess,
+		cfg.JwtSecretRefresh,
+		&cfg.JwtExpiryRefresh,
+		&cfg.AutoLogout,
+		redisClient)
 	if err != nil {
 		zapLogger.Fatalf("failde to jwt service: %v", err)
 	}
@@ -100,7 +114,7 @@ func main() {
 	})
 
 	// Start App
-	zapLogger.Infof("Starting HTTP server on port: %v", 5000)
+	zapLogger.Infof("Starting HTTP server on port: %v", cfg.PORT)
 	err = http.ListenAndServe(cfg.PORT, router)
 	if err != nil {
 		fmt.Println(err)
