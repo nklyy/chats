@@ -9,7 +9,7 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
     volumes:
-      - ./dataDb/.mongodb-tmp:/data/db
+      - ./dataDb/.mongodb-tmp:/data
     networks:
       - chat
 

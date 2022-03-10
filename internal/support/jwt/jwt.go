@@ -143,7 +143,7 @@ func (s *service) ParseToken(token string, isAccess bool) (*Payload, error) {
 	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
 	if err != nil {
 		if _, ok := err.(*jwt.ValidationError); ok {
-			return nil, ErrTokenExpire
+			return nil, ErrTokenInvalidOrExpire
 		}
 		return nil, ErrToken
 	}
