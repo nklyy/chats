@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 services:
   mongodb:
     image: mongo:latest
@@ -9,7 +9,7 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
     volumes:
-      - ./dataDb/.mongodb-tmp:/data
+      - ./data/mongo:/data
     networks:
       - chat
 
@@ -20,7 +20,20 @@ services:
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
     volumes:
-      - ./dataRedis:/data
+      - ./data/redis:/data
+    networks:
+      - chat
+
+  rabbit:
+    image: rabbitmq:latest
+    container_name: chat-rabbitmq
+    restart: on-failure
+    ports:
+      - ${AMQP_CONSUMER_PORT}:${AMQP_CONSUMER_PORT}   # for sender and consumer connections
+      - ${AMQP_SERVER_PORT}:${AMQP_SERVER_PORT} # for serve RabbitMQ GUI
+    volumes:
+      - ./data/rabbit/lib:/var/lib/rabbitmq
+      - ./data/rabbit/log:/var/log/rabbitmq
     networks:
       - chat
 
@@ -33,12 +46,14 @@ services:
     depends_on:
       - mongodb
       - redisdb
+      - rabbit
     ports:
       - ${APP_PORT}:${APP_PORT}
     volumes:
-      - ./dataApp:/app
+      - ./data/app:/app
 
     environment:
+      - PORT=${PORT}
       - MONGO_DB_NAME=${MONGO_DB_NAME}
       - MONGO_DB_URL=mongodb://chat-mongodb:${MONGO_PORT}/${MONGO_DB_NAME}
       - JWT_SECRET_ACCESS=${JWT_SECRET_ACCESS}
@@ -47,7 +62,9 @@ services:
       - JWT_EXPIRY_REFRESH=${JWT_EXPIRY_REFRESH}
       - AUTO_LOGOUT=${AUTO_LOGOUT}
       - SALT=${SALT}
-      - PORT=${PORT}
+      - REDIS_HOST=chat-redis
+      - REDIS_PORT=${REDIS_PORT}
+      - AMQP_SERVER_URL=amqp://guest:guest@chat-rabbitmq:5672
     networks:
       - chat
 

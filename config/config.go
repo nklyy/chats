@@ -18,6 +18,7 @@ type Config struct {
 	AutoLogout       int    `mapstructure:"AUTO_LOGOUT"`
 	RedisHost        string `mapstructure:"REDIS_HOST"`
 	RedisPort        string `mapstructure:"REDIS_PORT"`
+	RabbitMqUrl      string `mapstructure:"AMQP_SERVER_URL"`
 }
 
 func Get(path string) (*Config, error) {
