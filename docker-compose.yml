@@ -9,13 +9,14 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
     volumes:
-      - ./data/mongo:/data
+      - ./data/mongo:/data/db
+      - ./data/mongo/.mongodb-tmp:/data/db
     networks:
       - chat
 
   redisdb:
     image: redis:latest
-    container_name: chat-redis
+    container_name: chat-redis-auth
     restart: on-failure
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
@@ -29,11 +30,12 @@ services:
     container_name: chat-rabbitmq
     restart: on-failure
     ports:
+      - 127.0.0.1:${AMQP_SERVER_PORT}:${AMQP_SERVER_PORT}
       - ${AMQP_CONSUMER_PORT}:${AMQP_CONSUMER_PORT}   # for sender and consumer connections
       - ${AMQP_SERVER_PORT}:${AMQP_SERVER_PORT} # for serve RabbitMQ GUI
     volumes:
-      - ./data/rabbit/lib:/var/lib/rabbitmq
-      - ./data/rabbit/log:/var/log/rabbitmq
+      - ./data/rabbitmq/lib:/var/lib/rabbitmq
+      - ./data/rabbitmq/log:/var/log/rabbitmq
     networks:
       - chat
 
@@ -62,7 +64,7 @@ services:
       - JWT_EXPIRY_REFRESH=${JWT_EXPIRY_REFRESH}
       - AUTO_LOGOUT=${AUTO_LOGOUT}
       - SALT=${SALT}
-      - REDIS_HOST=chat-redis
+      - REDIS_HOST=chat-redis-auth
       - REDIS_PORT=${REDIS_PORT}
       - AMQP_SERVER_URL=amqp://guest:guest@chat-rabbitmq:5672
     networks:

@@ -14,6 +14,7 @@ import (
 	"noname-realtime-support-chat/internal/support/jwt"
 	"noname-realtime-support-chat/pkg/logger"
 	"noname-realtime-support-chat/pkg/mongodb"
+	"noname-realtime-support-chat/pkg/rabbitmq"
 	"noname-realtime-support-chat/pkg/redis"
 	"syscall"
 )
@@ -58,9 +59,22 @@ func main() {
 	// Redis
 	redisClient, err := redis.NewClient(cfg.RedisHost, cfg.RedisPort)
 	if err != nil {
-		zapLogger.Fatalf("failed to connect to redis %v", err)
+		zapLogger.Fatalf("failed to connect to redis: %v", err)
 	}
 	zapLogger.Info("Redis connected successfully")
+
+	// RabbitMq
+	rabbitmqConnection, err := rabbitmq.NewConnection(cfg.RabbitMqUrl)
+	if err != nil {
+		zapLogger.Fatalf("can't connect to amqp host: %v", err)
+	}
+
+	rabbitmqChannel, err := rabbitmq.NewChanel(rabbitmqConnection)
+	if err != nil {
+		zapLogger.Fatalf("can't create amqp channel: %v", err)
+	}
+	defer rabbitmq.Close(rabbitmqConnection, rabbitmqChannel)
+	zapLogger.Info("RabbitMq connected successfully")
 
 	// Repositories
 	supportRepository, err := support.NewRepository(db, cfg.MongoDbName, zapLogger)

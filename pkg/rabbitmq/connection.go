@@ -1,4 +1,4 @@
-package rabbit
+package rabbitmq
 
 import (
 	"github.com/streadway/amqp"
@@ -11,12 +11,6 @@ func NewConnection(amqpUrl string) (*amqp.Connection, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func(connectRabbitMQ *amqp.Connection) {
-		err := connectRabbitMQ.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(connectRabbitMQ)
 
 	return connectRabbitMQ, nil
 }
@@ -26,12 +20,22 @@ func NewChanel(rabbitConnection *amqp.Connection) (*amqp.Channel, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func(channelRabbitMQ *amqp.Channel) {
-		err := channelRabbitMQ.Close()
+
+	return channelRabbitMQ, nil
+}
+
+func Close(connection *amqp.Connection, channel *amqp.Channel) {
+	defer func(connection *amqp.Connection) {
+		err := connection.Close()
 		if err != nil {
 			log.Fatal(err)
 		}
-	}(channelRabbitMQ)
+	}(connection)
 
-	return channelRabbitMQ, nil
+	defer func(channel *amqp.Channel) {
+		err := channel.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(channel)
 }
