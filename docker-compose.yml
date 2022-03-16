@@ -14,14 +14,25 @@ services:
     networks:
       - chat
 
-  redisdb:
+  redisAuth:
     image: redis:latest
     container_name: chat-redis-auth
     restart: on-failure
     ports:
-      - ${REDIS_PORT}:${REDIS_PORT}
+      - ${REDIS_PORT_AUTH}:${REDIS_PORT_AUTH}
     volumes:
-      - ./data/redis:/data
+      - ./data/redis-auth:/data
+    networks:
+      - chat
+
+  redisChat:
+    image: redis:latest
+    container_name: chat-redis
+    restart: on-failure
+    ports:
+      - ${REDIS_PORT_CHAT}:${REDIS_PORT_CHAT}
+    volumes:
+      - ./data/redis-chat:/data
     networks:
       - chat
 
@@ -47,7 +58,8 @@ services:
     restart: on-failure
     depends_on:
       - mongodb
-      - redisdb
+      - redisAuth
+      - redisChat
       - rabbit
     ports:
       - ${APP_PORT}:${APP_PORT}
