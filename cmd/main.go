@@ -11,10 +11,10 @@ import (
 	"noname-realtime-support-chat/config"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/internal/support"
+	"noname-realtime-support-chat/internal/support/auth"
 	"noname-realtime-support-chat/internal/support/jwt"
 	"noname-realtime-support-chat/pkg/logger"
 	"noname-realtime-support-chat/pkg/mongodb"
-	"noname-realtime-support-chat/pkg/rabbitmq"
 	"noname-realtime-support-chat/pkg/redis"
 	"syscall"
 )
@@ -64,17 +64,17 @@ func main() {
 	zapLogger.Info("Redis connected successfully")
 
 	// RabbitMq
-	rabbitmqConnection, err := rabbitmq.NewConnection(cfg.RabbitMqUrl)
-	if err != nil {
-		zapLogger.Fatalf("can't connect to amqp host: %v", err)
-	}
-
-	rabbitmqChannel, err := rabbitmq.NewChanel(rabbitmqConnection)
-	if err != nil {
-		zapLogger.Fatalf("can't create amqp channel: %v", err)
-	}
-	defer rabbitmq.Close(rabbitmqConnection, rabbitmqChannel)
-	zapLogger.Info("RabbitMq connected successfully")
+	//rabbitmqConnection, err := rabbitmq.NewConnection(cfg.RabbitMqUrl)
+	//if err != nil {
+	//	zapLogger.Fatalf("can't connect to amqp host: %v", err)
+	//}
+	//
+	//rabbitmqChannel, err := rabbitmq.NewChanel(rabbitmqConnection)
+	//if err != nil {
+	//	zapLogger.Fatalf("can't create amqp channel: %v", err)
+	//}
+	//defer rabbitmq.Close(rabbitmqConnection, rabbitmqChannel)
+	//zapLogger.Info("RabbitMq connected successfully")
 
 	// Repositories
 	supportRepository, err := support.NewRepository(db, cfg.MongoDbName, zapLogger)
@@ -94,7 +94,12 @@ func main() {
 		zapLogger.Fatalf("failde to jwt service: %v", err)
 	}
 
-	supportService, err := support.NewService(supportRepository, zapLogger, &cfg.Salt, jwtSvc)
+	supportService, err := support.NewService(supportRepository, zapLogger, &cfg.Salt)
+	if err != nil {
+		zapLogger.Fatalf("failde to create support service: %v", err)
+	}
+
+	supportAuthService, err := auth.NewService(supportService, zapLogger, jwtSvc)
 	if err != nil {
 		zapLogger.Fatalf("failde to create support service: %v", err)
 	}
@@ -111,13 +116,19 @@ func main() {
 
 	// Handlers
 	healthHandler := health.NewHandler()
+
 	supportHandler, err := support.NewHandler(supportService)
 	if err != nil {
 		zapLogger.Fatalf("failde to create support handler: %v", err)
 	}
 
+	supportAuthHandler, err := auth.NewHandler(supportAuthService)
+	if err != nil {
+		zapLogger.Fatalf("failde to create support auth handler: %v", err)
+	}
+
 	router.Route("/api/v1/auth", func(r chi.Router) {
-		supportHandler.SetupAuthRoutes(r)
+		supportAuthHandler.SetupRoutes(r)
 	})
 
 	router.Route("/api/v1", func(r chi.Router) {
