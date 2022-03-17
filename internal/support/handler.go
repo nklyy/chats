@@ -27,18 +27,11 @@ func (h *Handler) SetupRoutes(router chi.Router) {
 func (h *Handler) GetSupportById(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	support, err := h.supportSvc.GetSupportById(r.Context(), id)
+	support, err := h.supportSvc.GetSupportById(r.Context(), id, false)
 	if err != nil {
 		respond.Respond(w, errors.HTTPCode(err), err)
 		return
 	}
 
-	entity, err := MapToEntity(support)
-	if err != nil {
-		respond.Respond(w, errors.HTTPCode(err), err)
-		return
-	}
-	entity.RemovePassword()
-
-	respond.Respond(w, http.StatusOK, MapToDTO(entity))
+	respond.Respond(w, http.StatusOK, support)
 }

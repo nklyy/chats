@@ -170,11 +170,12 @@ func TestService_Login(t *testing.T) {
 	var emptyStr string
 
 	tests := []struct {
-		name   string
-		ctx    context.Context
-		dto    *auth.LoginDTO
-		setup  func(context.Context, *auth.LoginDTO)
-		expect func(*testing.T, *string, *string, error)
+		name         string
+		ctx          context.Context
+		dto          *auth.LoginDTO
+		withPassword bool
+		setup        func(context.Context, *auth.LoginDTO, bool)
+		expect       func(*testing.T, *string, *string, error)
 	}{
 		{
 			name: "should return jwt token",
@@ -183,8 +184,9 @@ func TestService_Login(t *testing.T) {
 				Email:    "email",
 				Password: "password",
 			},
-			setup: func(ctx context.Context, dto *auth.LoginDTO) {
-				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(supportDto, nil)
+			withPassword: true,
+			setup: func(ctx context.Context, dto *auth.LoginDTO, withPassword bool) {
+				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email, withPassword).Return(supportDto, nil)
 				mockJwt.EXPECT().CreateTokens(ctx, supportDto.ID, "support").Return(&tokenAccess, &tokenRefresh, nil)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
@@ -202,8 +204,9 @@ func TestService_Login(t *testing.T) {
 				Email:    "email",
 				Password: "password",
 			},
-			setup: func(ctx context.Context, dto *auth.LoginDTO) {
-				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(nil, support.ErrNotFound)
+			withPassword: true,
+			setup: func(ctx context.Context, dto *auth.LoginDTO, withPassword bool) {
+				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email, withPassword).Return(nil, support.ErrNotFound)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.Empty(t, a)
@@ -219,8 +222,9 @@ func TestService_Login(t *testing.T) {
 				Email:    "email",
 				Password: "password",
 			},
-			setup: func(ctx context.Context, dto *auth.LoginDTO) {
-				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email).Return(supportDto, nil)
+			withPassword: true,
+			setup: func(ctx context.Context, dto *auth.LoginDTO, withPassword bool) {
+				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email, withPassword).Return(supportDto, nil)
 				mockJwt.EXPECT().CreateTokens(ctx, supportDto.ID, "support").Return(&emptyStr, &emptyStr, jwt.ErrFailedCreateTokens)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
@@ -234,7 +238,7 @@ func TestService_Login(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			tc.setup(tc.ctx, tc.dto)
+			tc.setup(tc.ctx, tc.dto, tc.withPassword)
 			a, r, err := service.Login(tc.ctx, tc.dto)
 			tc.expect(t, a, r, err)
 		})

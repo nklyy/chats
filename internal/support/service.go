@@ -8,8 +8,8 @@ import (
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
-	GetSupportById(ctx context.Context, id string) (*DTO, error)
-	GetSupportByEmail(ctx context.Context, email string) (*DTO, error)
+	GetSupportById(ctx context.Context, id string, withPassword bool) (*DTO, error)
+	GetSupportByEmail(ctx context.Context, email string, withPassword bool) (*DTO, error)
 	CreateSupport(ctx context.Context, email, name, password string) (*DTO, error)
 }
 
@@ -33,21 +33,29 @@ func NewService(repository Repository, logger *zap.SugaredLogger, salt *int) (Se
 	return &service{repository: repository, logger: logger, salt: *salt}, nil
 }
 
-func (s *service) GetSupportById(ctx context.Context, id string) (*DTO, error) {
+func (s *service) GetSupportById(ctx context.Context, id string, withPassword bool) (*DTO, error) {
 	support, err := s.repository.GetSupportById(ctx, id)
 	if err != nil {
 		s.logger.Errorf("failed to get support: %v", err)
 		return nil, err
 	}
 
+	if !withPassword {
+		support.RemovePassword()
+	}
+
 	return MapToDTO(support), nil
 }
 
-func (s *service) GetSupportByEmail(ctx context.Context, id string) (*DTO, error) {
+func (s *service) GetSupportByEmail(ctx context.Context, id string, withPassword bool) (*DTO, error) {
 	support, err := s.repository.GetSupportByEmail(ctx, id)
 	if err != nil {
 		s.logger.Errorf("failed to get support: %v", err)
 		return nil, err
+	}
+
+	if !withPassword {
+		support.RemovePassword()
 	}
 
 	return MapToDTO(support), nil

@@ -47,7 +47,7 @@ func (s *service) Registration(ctx context.Context, dto *RegistrationDTO) (*stri
 }
 
 func (s *service) Login(ctx context.Context, dto *LoginDTO) (*string, *string, error) {
-	supportDto, err := s.supportSvc.GetSupportByEmail(ctx, dto.Email)
+	supportDto, err := s.supportSvc.GetSupportByEmail(ctx, dto.Email, true)
 	if err != nil {
 		s.logger.Errorf("failed to find support %v", err)
 		return nil, nil, err

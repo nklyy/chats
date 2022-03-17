@@ -51,31 +51,31 @@ func (mr *MockServiceMockRecorder) CreateSupport(ctx, email, name, password inte
 }
 
 // GetSupportByEmail mocks base method.
-func (m *MockService) GetSupportByEmail(ctx context.Context, email string) (*support.DTO, error) {
+func (m *MockService) GetSupportByEmail(ctx context.Context, email string, withPassword bool) (*support.DTO, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupportByEmail", ctx, email)
+	ret := m.ctrl.Call(m, "GetSupportByEmail", ctx, email, withPassword)
 	ret0, _ := ret[0].(*support.DTO)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSupportByEmail indicates an expected call of GetSupportByEmail.
-func (mr *MockServiceMockRecorder) GetSupportByEmail(ctx, email interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetSupportByEmail(ctx, email, withPassword interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportByEmail", reflect.TypeOf((*MockService)(nil).GetSupportByEmail), ctx, email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportByEmail", reflect.TypeOf((*MockService)(nil).GetSupportByEmail), ctx, email, withPassword)
 }
 
 // GetSupportById mocks base method.
-func (m *MockService) GetSupportById(ctx context.Context, id string) (*support.DTO, error) {
+func (m *MockService) GetSupportById(ctx context.Context, id string, withPassword bool) (*support.DTO, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSupportById", ctx, id)
+	ret := m.ctrl.Call(m, "GetSupportById", ctx, id, withPassword)
 	ret0, _ := ret[0].(*support.DTO)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSupportById indicates an expected call of GetSupportById.
-func (mr *MockServiceMockRecorder) GetSupportById(ctx, id interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetSupportById(ctx, id, withPassword interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportById", reflect.TypeOf((*MockService)(nil).GetSupportById), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupportById", reflect.TypeOf((*MockService)(nil).GetSupportById), ctx, id, withPassword)
 }

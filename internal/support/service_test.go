@@ -93,16 +93,18 @@ func TestService_GetSupportById(t *testing.T) {
 	supportDTO := support.MapToDTO(supportEntity)
 
 	tests := []struct {
-		name   string
-		ctx    context.Context
-		id     string
-		setup  func(context.Context, string)
-		expect func(*testing.T, *support.DTO, error)
+		name         string
+		ctx          context.Context
+		id           string
+		withPassword bool
+		setup        func(context.Context, string)
+		expect       func(*testing.T, *support.DTO, error)
 	}{
 		{
-			name: "should return support",
-			ctx:  context.Background(),
-			id:   supportDTO.ID,
+			name:         "should return support",
+			ctx:          context.Background(),
+			id:           supportDTO.ID,
+			withPassword: false,
 			setup: func(ctx context.Context, id string) {
 				mockRepo.EXPECT().GetSupportById(ctx, id).Return(supportEntity, nil)
 			},
@@ -113,9 +115,10 @@ func TestService_GetSupportById(t *testing.T) {
 			},
 		},
 		{
-			name: "should return not found",
-			ctx:  context.Background(),
-			id:   "incorrect_id",
+			name:         "should return not found",
+			ctx:          context.Background(),
+			id:           "incorrect_id",
+			withPassword: false,
 			setup: func(ctx context.Context, id string) {
 				mockRepo.EXPECT().GetSupportById(ctx, id).Return(nil, support.ErrNotFound)
 			},
@@ -129,7 +132,7 @@ func TestService_GetSupportById(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup(tc.ctx, tc.id)
-			s, err := service.GetSupportById(tc.ctx, tc.id)
+			s, err := service.GetSupportById(tc.ctx, tc.id, tc.withPassword)
 			tc.expect(t, s, err)
 		})
 	}
@@ -151,16 +154,18 @@ func TestService_GetSupportByEmail(t *testing.T) {
 	supportDTO := support.MapToDTO(supportEntity)
 
 	tests := []struct {
-		name   string
-		ctx    context.Context
-		email  string
-		setup  func(context.Context, string)
-		expect func(*testing.T, *support.DTO, error)
+		name         string
+		ctx          context.Context
+		email        string
+		withPassword bool
+		setup        func(context.Context, string)
+		expect       func(*testing.T, *support.DTO, error)
 	}{
 		{
-			name:  "should return support",
-			ctx:   context.Background(),
-			email: "email",
+			name:         "should return support",
+			ctx:          context.Background(),
+			email:        "email",
+			withPassword: false,
 			setup: func(ctx context.Context, email string) {
 				mockRepo.EXPECT().GetSupportByEmail(ctx, email).Return(supportEntity, nil)
 			},
@@ -171,9 +176,10 @@ func TestService_GetSupportByEmail(t *testing.T) {
 			},
 		},
 		{
-			name:  "should return not found",
-			ctx:   context.Background(),
-			email: "email",
+			name:         "should return not found",
+			ctx:          context.Background(),
+			email:        "email",
+			withPassword: false,
 			setup: func(ctx context.Context, email string) {
 				mockRepo.EXPECT().GetSupportByEmail(ctx, email).Return(nil, support.ErrNotFound)
 			},
@@ -187,7 +193,7 @@ func TestService_GetSupportByEmail(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup(tc.ctx, tc.email)
-			s, err := service.GetSupportByEmail(tc.ctx, tc.email)
+			s, err := service.GetSupportByEmail(tc.ctx, tc.email, tc.withPassword)
 			tc.expect(t, s, err)
 		})
 	}
