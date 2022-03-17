@@ -21,6 +21,7 @@ func TestInit(t *testing.T) {
 		autoLogout       string
 		redisHost        string
 		redisPort        string
+		rabbitMqUrl      string
 	}
 
 	type args struct {
@@ -40,6 +41,7 @@ func TestInit(t *testing.T) {
 		os.Setenv("AUTO_LOGOUT", env.autoLogout)
 		os.Setenv("REDIS_HOST", env.redisHost)
 		os.Setenv("REDIS_PORT", env.redisPort)
+		os.Setenv("AMQP_SERVER_URL", env.rabbitMqUrl)
 	}
 
 	tests := []struct {
@@ -64,6 +66,7 @@ func TestInit(t *testing.T) {
 					autoLogout:       "3",
 					redisHost:        "localhost",
 					redisPort:        "1234",
+					rabbitMqUrl:      "amqp://guest:guest@message-broker:5672",
 				},
 			},
 			want: &config.Config{
@@ -79,6 +82,7 @@ func TestInit(t *testing.T) {
 				AutoLogout:       3,
 				RedisHost:        "localhost",
 				RedisPort:        "1234",
+				RabbitMqUrl:      "amqp://guest:guest@message-broker:5672",
 			},
 		},
 	}
