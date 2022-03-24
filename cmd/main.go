@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"noname-realtime-support-chat/config"
+	"noname-realtime-support-chat/internal/chat"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/internal/support"
 	"noname-realtime-support-chat/internal/support/auth"
@@ -127,6 +128,11 @@ func main() {
 		zapLogger.Fatalf("failde to create support auth handler: %v", err)
 	}
 
+	chatHandler, err := chat.NewHandler()
+	if err != nil {
+		zapLogger.Fatalf("failde to create chat handler: %v", err)
+	}
+
 	router.Route("/api/v1/auth", func(r chi.Router) {
 		supportAuthHandler.SetupRoutes(r)
 	})
@@ -136,6 +142,7 @@ func main() {
 
 		healthHandler.SetupRoutes(r)
 		supportHandler.SetupRoutes(supportRoute)
+		chatHandler.SetupRoutes(r)
 	})
 
 	// Start App
