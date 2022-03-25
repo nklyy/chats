@@ -20,7 +20,8 @@ func TestInit(t *testing.T) {
 		jwtExpiryRefresh string
 		autoLogout       string
 		redisHost        string
-		redisPort        string
+		redisPortAuth    string
+		redisPortChat    string
 		rabbitMqUrl      string
 	}
 
@@ -40,7 +41,8 @@ func TestInit(t *testing.T) {
 		os.Setenv("JWT_EXPIRY_REFRESH", env.jwtExpiryRefresh)
 		os.Setenv("AUTO_LOGOUT", env.autoLogout)
 		os.Setenv("REDIS_HOST", env.redisHost)
-		os.Setenv("REDIS_PORT", env.redisPort)
+		os.Setenv("REDIS_PORT_AUTH", env.redisPortAuth)
+		os.Setenv("REDIS_PORT_CHAT", env.redisPortChat)
 		os.Setenv("AMQP_SERVER_URL", env.rabbitMqUrl)
 	}
 
@@ -65,7 +67,8 @@ func TestInit(t *testing.T) {
 					jwtExpiryRefresh: "300",
 					autoLogout:       "3",
 					redisHost:        "localhost",
-					redisPort:        "1234",
+					redisPortAuth:    "1234",
+					redisPortChat:    "4321",
 					rabbitMqUrl:      "amqp://guest:guest@message-broker:5672",
 				},
 			},
@@ -81,7 +84,8 @@ func TestInit(t *testing.T) {
 				JwtExpiryRefresh: 300,
 				AutoLogout:       3,
 				RedisHost:        "localhost",
-				RedisPort:        "1234",
+				RedisPortAuth:    "1234",
+				RedisPortChat:    "4321",
 				RabbitMqUrl:      "amqp://guest:guest@message-broker:5672",
 			},
 		},

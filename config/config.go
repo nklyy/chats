@@ -17,7 +17,8 @@ type Config struct {
 	JwtExpiryRefresh int    `mapstructure:"JWT_EXPIRY_REFRESH"`
 	AutoLogout       int    `mapstructure:"AUTO_LOGOUT"`
 	RedisHost        string `mapstructure:"REDIS_HOST"`
-	RedisPort        string `mapstructure:"REDIS_PORT"`
+	RedisPortAuth    string `mapstructure:"REDIS_PORT_AUTH"`
+	RedisPortChat    string `mapstructure:"REDIS_PORT_CHAT"`
 	RabbitMqUrl      string `mapstructure:"AMQP_SERVER_URL"`
 }
 
