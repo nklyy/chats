@@ -25,7 +25,7 @@ type CachedTokens struct {
 
 //go:generate mockgen -source=jwt.go -destination=mocks/jwt_mock.go
 type Service interface {
-	CreateTokens(ctx context.Context, id, role string) (*string, *string, error)
+	CreateTokens(ctx context.Context, id string, support bool) (*string, *string, error)
 	ParseToken(token string, isAccess bool) (*Payload, error)
 	VerifyToken(ctx context.Context, payload *Payload, isAccess bool) error
 	DeleteTokens(ctx context.Context, payload *Payload) error
@@ -74,7 +74,14 @@ func NewJwtService(secretKeyAccess string,
 		redisClient:      redisClient}, nil
 }
 
-func (s *service) CreateTokens(ctx context.Context, id, role string) (*string, *string, error) {
+func (s *service) CreateTokens(ctx context.Context, id string, support bool) (*string, *string, error) {
+	var role string
+	if support {
+		role = "support"
+	} else {
+		role = "user"
+	}
+
 	// sign access token
 	accessUid := uuid.New().String()
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, &Payload{

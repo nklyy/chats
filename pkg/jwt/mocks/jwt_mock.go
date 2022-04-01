@@ -6,7 +6,7 @@ package mock_jwt
 
 import (
 	context "context"
-	jwt "noname-realtime-support-chat/internal/support/jwt"
+	jwt "noname-realtime-support-chat/pkg/jwt"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -36,9 +36,9 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // CreateTokens mocks base method.
-func (m *MockService) CreateTokens(ctx context.Context, id, role string) (*string, *string, error) {
+func (m *MockService) CreateTokens(ctx context.Context, id string, support bool) (*string, *string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateTokens", ctx, id, role)
+	ret := m.ctrl.Call(m, "CreateTokens", ctx, id, support)
 	ret0, _ := ret[0].(*string)
 	ret1, _ := ret[1].(*string)
 	ret2, _ := ret[2].(error)
@@ -46,9 +46,9 @@ func (m *MockService) CreateTokens(ctx context.Context, id, role string) (*strin
 }
 
 // CreateTokens indicates an expected call of CreateTokens.
-func (mr *MockServiceMockRecorder) CreateTokens(ctx, id, role interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) CreateTokens(ctx, id, support interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTokens", reflect.TypeOf((*MockService)(nil).CreateTokens), ctx, id, role)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTokens", reflect.TypeOf((*MockService)(nil).CreateTokens), ctx, id, support)
 }
 
 // DeleteTokens mocks base method.

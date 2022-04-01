@@ -6,11 +6,11 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/support"
-	"noname-realtime-support-chat/internal/support/auth"
-	"noname-realtime-support-chat/internal/support/jwt"
-	mock_jwt "noname-realtime-support-chat/internal/support/jwt/mocks"
-	mock_support "noname-realtime-support-chat/internal/support/mocks"
+	"noname-realtime-support-chat/internal/user"
+	"noname-realtime-support-chat/internal/user/auth"
+	mock_user "noname-realtime-support-chat/internal/user/mocks"
+	jwt2 "noname-realtime-support-chat/pkg/jwt"
+	"noname-realtime-support-chat/pkg/jwt/mocks"
 	"noname-realtime-support-chat/pkg/logger"
 	"testing"
 )
@@ -20,38 +20,38 @@ func TestNewService(t *testing.T) {
 	defer controller.Finish()
 
 	tests := []struct {
-		name       string
-		supportSvc support.Service
-		logger     *zap.SugaredLogger
-		jwtSvc     jwt.Service
-		expect     func(*testing.T, auth.Service, error)
+		name    string
+		userSvc user.Service
+		logger  *zap.SugaredLogger
+		jwtSvc  jwt2.Service
+		expect  func(*testing.T, auth.Service, error)
 	}{
 		{
-			name:       "should return service",
-			supportSvc: mock_support.NewMockService(controller),
-			logger:     &zap.SugaredLogger{},
-			jwtSvc:     mock_jwt.NewMockService(controller),
+			name:    "should return service",
+			userSvc: mock_user.NewMockService(controller),
+			logger:  &zap.SugaredLogger{},
+			jwtSvc:  mock_jwt.NewMockService(controller),
 			expect: func(t *testing.T, service auth.Service, err error) {
 				assert.NotNil(t, service)
 				assert.Nil(t, err)
 			},
 		},
 		{
-			name:       "should return invalid support service",
-			supportSvc: nil,
-			logger:     &zap.SugaredLogger{},
-			jwtSvc:     mock_jwt.NewMockService(controller),
+			name:    "should return invalid user service",
+			userSvc: nil,
+			logger:  &zap.SugaredLogger{},
+			jwtSvc:  mock_jwt.NewMockService(controller),
 			expect: func(t *testing.T, service auth.Service, err error) {
 				assert.Nil(t, service)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid support service")
+				assert.EqualError(t, err, "invalid user service")
 			},
 		},
 		{
-			name:       "should return invalid logger",
-			supportSvc: mock_support.NewMockService(controller),
-			logger:     nil,
-			jwtSvc:     mock_jwt.NewMockService(controller),
+			name:    "should return invalid logger",
+			userSvc: mock_user.NewMockService(controller),
+			logger:  nil,
+			jwtSvc:  mock_jwt.NewMockService(controller),
 			expect: func(t *testing.T, service auth.Service, err error) {
 				assert.Nil(t, service)
 				assert.NotNil(t, err)
@@ -59,10 +59,10 @@ func TestNewService(t *testing.T) {
 			},
 		},
 		{
-			name:       "should return invalid jwt service",
-			supportSvc: mock_support.NewMockService(controller),
-			logger:     &zap.SugaredLogger{},
-			jwtSvc:     nil,
+			name:    "should return invalid jwt service",
+			userSvc: mock_user.NewMockService(controller),
+			logger:  &zap.SugaredLogger{},
+			jwtSvc:  nil,
 			expect: func(t *testing.T, service auth.Service, err error) {
 				assert.Nil(t, service)
 				assert.NotNil(t, err)
@@ -73,7 +73,7 @@ func TestNewService(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			svc, err := auth.NewService(tc.supportSvc, tc.logger, tc.jwtSvc)
+			svc, err := auth.NewService(tc.userSvc, tc.logger, tc.jwtSvc)
 			tc.expect(t, svc, err)
 		})
 	}
@@ -83,7 +83,7 @@ func TestService_Registration(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	mockSupSvc := mock_support.NewMockService(controller)
+	mockUserSvc := mock_user.NewMockService(controller)
 	mockJwt := mock_jwt.NewMockService(controller)
 
 	salt := 10
@@ -91,10 +91,10 @@ func TestService_Registration(t *testing.T) {
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := auth.NewService(mockSupSvc, zapLogger, mockJwt)
+	service, _ := auth.NewService(mockUserSvc, zapLogger, mockJwt)
 
-	supportEntity, _ := support.NewSupport("email", "name", "password", &salt)
-	supportDto := support.MapToDTO(supportEntity)
+	userEntity, _ := user.NewUser("email", "name", "password", &salt)
+	userDto := user.MapToDTO(userEntity)
 
 	tests := []struct {
 		name   string
@@ -104,7 +104,7 @@ func TestService_Registration(t *testing.T) {
 		expect func(*testing.T, *string, error)
 	}{
 		{
-			name: "should return registered support id",
+			name: "should return registered user id",
 			ctx:  context.Background(),
 			dto: &auth.RegistrationDTO{
 				Email:    "email",
@@ -112,16 +112,16 @@ func TestService_Registration(t *testing.T) {
 				Password: "password",
 			},
 			setup: func(ctx context.Context, dto *auth.RegistrationDTO) {
-				mockSupSvc.EXPECT().CreateSupport(ctx, dto.Email, dto.Name, dto.Password).Return(supportDto, nil)
+				mockUserSvc.EXPECT().CreateUser(ctx, dto.Email, dto.Name, dto.Password).Return(userDto, nil)
 			},
 			expect: func(t *testing.T, s *string, err error) {
 				assert.NotNil(t, s)
 				assert.Nil(t, err)
-				assert.Equal(t, supportEntity.ID.Hex(), *s)
+				assert.Equal(t, userEntity.ID.Hex(), *s)
 			},
 		},
 		{
-			name: "should return failed to create support",
+			name: "should return failed to create user",
 			ctx:  context.Background(),
 			dto: &auth.RegistrationDTO{
 				Email:    "email",
@@ -129,12 +129,12 @@ func TestService_Registration(t *testing.T) {
 				Password: "password",
 			},
 			setup: func(ctx context.Context, dto *auth.RegistrationDTO) {
-				mockSupSvc.EXPECT().CreateSupport(ctx, dto.Email, dto.Name, dto.Password).Return(nil, support.ErrFailedSaveSupport)
+				mockUserSvc.EXPECT().CreateUser(ctx, dto.Email, dto.Name, dto.Password).Return(nil, user.ErrFailedSaveUser)
 			},
 			expect: func(t *testing.T, s *string, err error) {
 				assert.Empty(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, support.ErrFailedSaveSupport.Error())
+				assert.EqualError(t, err, user.ErrFailedSaveUser.Error())
 			},
 		},
 	}
@@ -152,7 +152,7 @@ func TestService_Login(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	mockSupSvc := mock_support.NewMockService(controller)
+	mockUserSvc := mock_user.NewMockService(controller)
 	mockJwt := mock_jwt.NewMockService(controller)
 
 	salt := 10
@@ -160,10 +160,10 @@ func TestService_Login(t *testing.T) {
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := auth.NewService(mockSupSvc, zapLogger, mockJwt)
+	service, _ := auth.NewService(mockUserSvc, zapLogger, mockJwt)
 
-	supportEntity, _ := support.NewSupport("email", "name", "password", &salt)
-	supportDto := support.MapToDTO(supportEntity)
+	userEntity, _ := user.NewUser("email", "name", "password", &salt)
+	userDto := user.MapToDTO(userEntity)
 
 	tokenAccess := "tokenAccess"
 	tokenRefresh := "tokenRefresh"
@@ -186,8 +186,8 @@ func TestService_Login(t *testing.T) {
 			},
 			withPassword: true,
 			setup: func(ctx context.Context, dto *auth.LoginDTO, withPassword bool) {
-				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email, withPassword).Return(supportDto, nil)
-				mockJwt.EXPECT().CreateTokens(ctx, supportDto.ID, "support").Return(&tokenAccess, &tokenRefresh, nil)
+				mockUserSvc.EXPECT().GetUserByEmail(ctx, dto.Email, withPassword).Return(userDto, nil)
+				mockJwt.EXPECT().CreateTokens(ctx, userDto.ID, "user").Return(&tokenAccess, &tokenRefresh, nil)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.NotNil(t, a)
@@ -198,7 +198,7 @@ func TestService_Login(t *testing.T) {
 			},
 		},
 		{
-			name: "should return failed to find support",
+			name: "should return failed to find user",
 			ctx:  context.Background(),
 			dto: &auth.LoginDTO{
 				Email:    "email",
@@ -206,13 +206,13 @@ func TestService_Login(t *testing.T) {
 			},
 			withPassword: true,
 			setup: func(ctx context.Context, dto *auth.LoginDTO, withPassword bool) {
-				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email, withPassword).Return(nil, support.ErrNotFound)
+				mockUserSvc.EXPECT().GetUserByEmail(ctx, dto.Email, withPassword).Return(nil, user.ErrNotFound)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.Empty(t, a)
 				assert.Empty(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, support.ErrNotFound.Error())
+				assert.EqualError(t, err, user.ErrNotFound.Error())
 			},
 		},
 		{
@@ -224,14 +224,14 @@ func TestService_Login(t *testing.T) {
 			},
 			withPassword: true,
 			setup: func(ctx context.Context, dto *auth.LoginDTO, withPassword bool) {
-				mockSupSvc.EXPECT().GetSupportByEmail(ctx, dto.Email, withPassword).Return(supportDto, nil)
-				mockJwt.EXPECT().CreateTokens(ctx, supportDto.ID, "support").Return(&emptyStr, &emptyStr, jwt.ErrFailedCreateTokens)
+				mockUserSvc.EXPECT().GetUserByEmail(ctx, dto.Email, withPassword).Return(userDto, nil)
+				mockJwt.EXPECT().CreateTokens(ctx, userDto.ID, "user").Return(&emptyStr, &emptyStr, jwt2.ErrFailedCreateTokens)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.Empty(t, a)
 				assert.Empty(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, jwt.ErrFailedCreateTokens.Error())
+				assert.EqualError(t, err, jwt2.ErrFailedCreateTokens.Error())
 			},
 		},
 	}
@@ -249,15 +249,15 @@ func TestService_Refresh(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	mockSupSvc := mock_support.NewMockService(controller)
+	mockUserSvc := mock_user.NewMockService(controller)
 	mockJwt := mock_jwt.NewMockService(controller)
 
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := auth.NewService(mockSupSvc, zapLogger, mockJwt)
+	service, _ := auth.NewService(mockUserSvc, zapLogger, mockJwt)
 
-	payload := jwt.Payload{
+	payload := jwt2.Payload{
 		Id:             "id",
 		Role:           "role",
 		Uid:            "uid",
@@ -283,7 +283,7 @@ func TestService_Refresh(t *testing.T) {
 			setup: func(ctx context.Context, dto *auth.RefreshDTO) {
 				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(&payload, nil)
 				mockJwt.EXPECT().VerifyToken(ctx, &payload, false).Return(nil)
-				mockJwt.EXPECT().CreateTokens(ctx, payload.Id, "support").Return(&tokenAccess, &tokenRefresh, nil)
+				mockJwt.EXPECT().CreateTokens(ctx, payload.Id, "user").Return(&tokenAccess, &tokenRefresh, nil)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.NotNil(t, a)
@@ -300,13 +300,13 @@ func TestService_Refresh(t *testing.T) {
 				Token: "token",
 			},
 			setup: func(ctx context.Context, dto *auth.RefreshDTO) {
-				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(nil, jwt.ErrToken)
+				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(nil, jwt2.ErrToken)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.Empty(t, a)
 				assert.Empty(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, jwt.ErrToken.Error())
+				assert.EqualError(t, err, jwt2.ErrToken.Error())
 			},
 		},
 		{
@@ -317,13 +317,13 @@ func TestService_Refresh(t *testing.T) {
 			},
 			setup: func(ctx context.Context, dto *auth.RefreshDTO) {
 				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(&payload, nil)
-				mockJwt.EXPECT().VerifyToken(ctx, &payload, false).Return(jwt.ErrNotFound)
+				mockJwt.EXPECT().VerifyToken(ctx, &payload, false).Return(jwt2.ErrNotFound)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.Empty(t, a)
 				assert.Empty(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, jwt.ErrNotFound.Error())
+				assert.EqualError(t, err, jwt2.ErrNotFound.Error())
 			},
 		},
 		{
@@ -335,13 +335,13 @@ func TestService_Refresh(t *testing.T) {
 			setup: func(ctx context.Context, dto *auth.RefreshDTO) {
 				mockJwt.EXPECT().ParseToken(dto.Token, false).Return(&payload, nil)
 				mockJwt.EXPECT().VerifyToken(ctx, &payload, false).Return(nil)
-				mockJwt.EXPECT().CreateTokens(ctx, payload.Id, "support").Return(&emptyStr, &emptyStr, jwt.ErrFailedCreateTokens)
+				mockJwt.EXPECT().CreateTokens(ctx, payload.Id, "user").Return(&emptyStr, &emptyStr, jwt2.ErrFailedCreateTokens)
 			},
 			expect: func(t *testing.T, a *string, r *string, err error) {
 				assert.Empty(t, a)
 				assert.Empty(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, jwt.ErrFailedCreateTokens.Error())
+				assert.EqualError(t, err, jwt2.ErrFailedCreateTokens.Error())
 			},
 		},
 	}
@@ -359,15 +359,15 @@ func TestService_Logout(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	mockSupSvc := mock_support.NewMockService(controller)
+	mockUserSvc := mock_user.NewMockService(controller)
 	mockJwt := mock_jwt.NewMockService(controller)
 
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := auth.NewService(mockSupSvc, zapLogger, mockJwt)
+	service, _ := auth.NewService(mockUserSvc, zapLogger, mockJwt)
 
-	payload := jwt.Payload{
+	payload := jwt2.Payload{
 		Id:             "id",
 		Role:           "role",
 		Uid:            "uid",
@@ -382,7 +382,7 @@ func TestService_Logout(t *testing.T) {
 		expect func(*testing.T, error)
 	}{
 		{
-			name: "should logout support",
+			name: "should logout user",
 			ctx:  context.Background(),
 			dto: &auth.LogoutDTO{
 				Token: "token",
@@ -403,11 +403,11 @@ func TestService_Logout(t *testing.T) {
 				Token: "token",
 			},
 			setup: func(ctx context.Context, dto *auth.LogoutDTO) {
-				mockJwt.EXPECT().ParseToken(dto.Token, true).Return(nil, jwt.ErrToken)
+				mockJwt.EXPECT().ParseToken(dto.Token, true).Return(nil, jwt2.ErrToken)
 			},
 			expect: func(t *testing.T, err error) {
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, jwt.ErrToken.Error())
+				assert.EqualError(t, err, jwt2.ErrToken.Error())
 			},
 		},
 		{
@@ -418,11 +418,11 @@ func TestService_Logout(t *testing.T) {
 			},
 			setup: func(ctx context.Context, dto *auth.LogoutDTO) {
 				mockJwt.EXPECT().ParseToken(dto.Token, true).Return(&payload, nil)
-				mockJwt.EXPECT().VerifyToken(ctx, &payload, true).Return(jwt.ErrNotFound)
+				mockJwt.EXPECT().VerifyToken(ctx, &payload, true).Return(jwt2.ErrNotFound)
 			},
 			expect: func(t *testing.T, err error) {
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, jwt.ErrNotFound.Error())
+				assert.EqualError(t, err, jwt2.ErrNotFound.Error())
 			},
 		},
 		{
@@ -434,11 +434,11 @@ func TestService_Logout(t *testing.T) {
 			setup: func(ctx context.Context, dto *auth.LogoutDTO) {
 				mockJwt.EXPECT().ParseToken(dto.Token, true).Return(&payload, nil)
 				mockJwt.EXPECT().VerifyToken(ctx, &payload, true).Return(nil)
-				mockJwt.EXPECT().DeleteTokens(ctx, &payload).Return(jwt.ErrFailedDeleteToken)
+				mockJwt.EXPECT().DeleteTokens(ctx, &payload).Return(jwt2.ErrFailedDeleteToken)
 			},
 			expect: func(t *testing.T, err error) {
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, jwt.ErrFailedDeleteToken.Error())
+				assert.EqualError(t, err, jwt2.ErrFailedDeleteToken.Error())
 			},
 		},
 	}

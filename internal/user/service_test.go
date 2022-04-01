@@ -1,12 +1,12 @@
-package support_test
+package user_test
 
 import (
 	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/support"
-	mock_support "noname-realtime-support-chat/internal/support/mocks"
+	"noname-realtime-support-chat/internal/user"
+	mock_user "noname-realtime-support-chat/internal/user/mocks"
 	"noname-realtime-support-chat/pkg/logger"
 	"testing"
 )
@@ -19,17 +19,17 @@ func TestNewService(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		repository support.Repository
+		repository user.Repository
 		logger     *zap.SugaredLogger
 		salt       *int
-		expect     func(*testing.T, support.Service, error)
+		expect     func(*testing.T, user.Service, error)
 	}{
 		{
 			name:       "should return service",
-			repository: mock_support.NewMockRepository(controller),
+			repository: mock_user.NewMockRepository(controller),
 			logger:     &zap.SugaredLogger{},
 			salt:       &salt,
-			expect: func(t *testing.T, s support.Service, err error) {
+			expect: func(t *testing.T, s user.Service, err error) {
 				assert.NotNil(t, s)
 				assert.Nil(t, err)
 			},
@@ -39,7 +39,7 @@ func TestNewService(t *testing.T) {
 			repository: nil,
 			logger:     &zap.SugaredLogger{},
 			salt:       &salt,
-			expect: func(t *testing.T, s support.Service, err error) {
+			expect: func(t *testing.T, s user.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "invalid repository")
@@ -47,10 +47,10 @@ func TestNewService(t *testing.T) {
 		},
 		{
 			name:       "should return invalid logger",
-			repository: mock_support.NewMockRepository(controller),
+			repository: mock_user.NewMockRepository(controller),
 			logger:     nil,
 			salt:       &salt,
-			expect: func(t *testing.T, s support.Service, err error) {
+			expect: func(t *testing.T, s user.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "invalid logger")
@@ -58,10 +58,10 @@ func TestNewService(t *testing.T) {
 		},
 		{
 			name:       "should return invalid salt",
-			repository: mock_support.NewMockRepository(controller),
+			repository: mock_user.NewMockRepository(controller),
 			logger:     &zap.SugaredLogger{},
 			salt:       nil,
-			expect: func(t *testing.T, s support.Service, err error) {
+			expect: func(t *testing.T, s user.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
 				assert.EqualError(t, err, "invalid salt")
@@ -71,26 +71,26 @@ func TestNewService(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			svc, err := support.NewService(tc.repository, tc.logger, tc.salt)
+			svc, err := user.NewService(tc.repository, tc.logger, tc.salt)
 			tc.expect(t, svc, err)
 		})
 	}
 }
 
-func TestService_GetSupportById(t *testing.T) {
+func TestService_GetUserById(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	mockRepo := mock_support.NewMockRepository(controller)
+	mockRepo := mock_user.NewMockRepository(controller)
 	salt := 10
 
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := support.NewService(mockRepo, zapLogger, &salt)
+	service, _ := user.NewService(mockRepo, zapLogger, &salt)
 
-	supportEntity, _ := support.NewSupport("email", "name", "password", &salt)
-	supportDTO := support.MapToDTO(supportEntity)
+	userEntity, _ := user.NewUser("email", "name", "password", &salt)
+	userDTO := user.MapToDTO(userEntity)
 
 	tests := []struct {
 		name         string
@@ -98,20 +98,20 @@ func TestService_GetSupportById(t *testing.T) {
 		id           string
 		withPassword bool
 		setup        func(context.Context, string)
-		expect       func(*testing.T, *support.DTO, error)
+		expect       func(*testing.T, *user.DTO, error)
 	}{
 		{
-			name:         "should return support",
+			name:         "should return user",
 			ctx:          context.Background(),
-			id:           supportDTO.ID,
+			id:           userDTO.ID,
 			withPassword: false,
 			setup: func(ctx context.Context, id string) {
-				mockRepo.EXPECT().GetSupportById(ctx, id).Return(supportEntity, nil)
+				mockRepo.EXPECT().GetUserById(ctx, id).Return(userEntity, nil)
 			},
-			expect: func(t *testing.T, dto *support.DTO, err error) {
+			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.NotNil(t, dto)
 				assert.Nil(t, err)
-				assert.Equal(t, dto.ID, supportDTO.ID)
+				assert.Equal(t, dto.ID, userDTO.ID)
 			},
 		},
 		{
@@ -120,11 +120,11 @@ func TestService_GetSupportById(t *testing.T) {
 			id:           "incorrect_id",
 			withPassword: false,
 			setup: func(ctx context.Context, id string) {
-				mockRepo.EXPECT().GetSupportById(ctx, id).Return(nil, support.ErrNotFound)
+				mockRepo.EXPECT().GetUserById(ctx, id).Return(nil, user.ErrNotFound)
 			},
-			expect: func(t *testing.T, dto *support.DTO, err error) {
+			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.Nil(t, dto)
-				assert.Equal(t, support.ErrNotFound, err)
+				assert.Equal(t, user.ErrNotFound, err)
 			},
 		},
 	}
@@ -132,26 +132,26 @@ func TestService_GetSupportById(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup(tc.ctx, tc.id)
-			s, err := service.GetSupportById(tc.ctx, tc.id, tc.withPassword)
+			s, err := service.GetUserById(tc.ctx, tc.id, tc.withPassword)
 			tc.expect(t, s, err)
 		})
 	}
 }
 
-func TestService_GetSupportByEmail(t *testing.T) {
+func TestService_GetUserByEmail(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	mockRepo := mock_support.NewMockRepository(controller)
+	mockRepo := mock_user.NewMockRepository(controller)
 	salt := 10
 
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := support.NewService(mockRepo, zapLogger, &salt)
+	service, _ := user.NewService(mockRepo, zapLogger, &salt)
 
-	supportEntity, _ := support.NewSupport("email", "name", "password", &salt)
-	supportDTO := support.MapToDTO(supportEntity)
+	userEntity, _ := user.NewUser("email", "name", "password", &salt)
+	userDTO := user.MapToDTO(userEntity)
 
 	tests := []struct {
 		name         string
@@ -159,20 +159,20 @@ func TestService_GetSupportByEmail(t *testing.T) {
 		email        string
 		withPassword bool
 		setup        func(context.Context, string)
-		expect       func(*testing.T, *support.DTO, error)
+		expect       func(*testing.T, *user.DTO, error)
 	}{
 		{
-			name:         "should return support",
+			name:         "should return user",
 			ctx:          context.Background(),
 			email:        "email",
 			withPassword: false,
 			setup: func(ctx context.Context, email string) {
-				mockRepo.EXPECT().GetSupportByEmail(ctx, email).Return(supportEntity, nil)
+				mockRepo.EXPECT().GetUserByEmail(ctx, email).Return(userEntity, nil)
 			},
-			expect: func(t *testing.T, dto *support.DTO, err error) {
+			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.NotNil(t, dto)
 				assert.Nil(t, err)
-				assert.Equal(t, dto.Email, supportDTO.Email)
+				assert.Equal(t, dto.Email, userDTO.Email)
 			},
 		},
 		{
@@ -181,11 +181,11 @@ func TestService_GetSupportByEmail(t *testing.T) {
 			email:        "email",
 			withPassword: false,
 			setup: func(ctx context.Context, email string) {
-				mockRepo.EXPECT().GetSupportByEmail(ctx, email).Return(nil, support.ErrNotFound)
+				mockRepo.EXPECT().GetUserByEmail(ctx, email).Return(nil, user.ErrNotFound)
 			},
-			expect: func(t *testing.T, dto *support.DTO, err error) {
+			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.Nil(t, dto)
-				assert.Equal(t, support.ErrNotFound, err)
+				assert.Equal(t, user.ErrNotFound, err)
 			},
 		},
 	}
@@ -193,26 +193,26 @@ func TestService_GetSupportByEmail(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup(tc.ctx, tc.email)
-			s, err := service.GetSupportByEmail(tc.ctx, tc.email, tc.withPassword)
+			s, err := service.GetUserByEmail(tc.ctx, tc.email, tc.withPassword)
 			tc.expect(t, s, err)
 		})
 	}
 }
 
-func TestService_CreateSupport(t *testing.T) {
+func TestService_CreateUser(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	mockRepo := mock_support.NewMockRepository(controller)
+	mockRepo := mock_user.NewMockRepository(controller)
 	salt := 10
 
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := support.NewService(mockRepo, zapLogger, &salt)
+	service, _ := user.NewService(mockRepo, zapLogger, &salt)
 
-	supportEntity, _ := support.NewSupport("email", "name", "password", &salt)
-	supportDTO := support.MapToDTO(supportEntity)
+	userEntity, _ := user.NewUser("email", "name", "password", &salt)
+	userDTO := user.MapToDTO(userEntity)
 
 	var emptyStr string
 
@@ -223,36 +223,36 @@ func TestService_CreateSupport(t *testing.T) {
 		name     string
 		password string
 		setup    func(context.Context, string, string, string)
-		expect   func(*testing.T, *support.DTO, error)
+		expect   func(*testing.T, *user.DTO, error)
 	}{
 		{
-			testName: "should return support",
+			testName: "should return user",
 			ctx:      context.Background(),
 			email:    "email",
 			name:     "name",
 			password: "password",
 			setup: func(ctx context.Context, email, name, password string) {
-				mockRepo.EXPECT().CreateSupport(ctx, gomock.Any()).Return(supportEntity.ID.Hex(), nil)
+				mockRepo.EXPECT().CreateUser(ctx, gomock.Any()).Return(userEntity.ID.Hex(), nil)
 			},
-			expect: func(t *testing.T, dto *support.DTO, err error) {
+			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.NotNil(t, dto)
 				assert.Nil(t, err)
-				assert.Equal(t, dto.Email, supportDTO.Email)
+				assert.Equal(t, dto.Email, userDTO.Email)
 			},
 		},
 		{
-			testName: "should return support",
+			testName: "should return user",
 			ctx:      context.Background(),
 			email:    "email",
 			name:     "name",
 			password: "password",
 			setup: func(ctx context.Context, email, name, password string) {
-				mockRepo.EXPECT().CreateSupport(ctx, gomock.Any()).Return(emptyStr, support.ErrFailedSaveSupport)
+				mockRepo.EXPECT().CreateUser(ctx, gomock.Any()).Return(emptyStr, user.ErrFailedSaveUser)
 			},
-			expect: func(t *testing.T, dto *support.DTO, err error) {
+			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.Empty(t, dto)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, support.ErrFailedSaveSupport.Error())
+				assert.EqualError(t, err, user.ErrFailedSaveUser.Error())
 			},
 		},
 	}
@@ -260,7 +260,7 @@ func TestService_CreateSupport(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.setup(tc.ctx, tc.email, tc.name, tc.password)
-			s, err := service.CreateSupport(tc.ctx, tc.email, tc.name, tc.password)
+			s, err := service.CreateUser(tc.ctx, tc.email, tc.name, tc.password)
 			tc.expect(t, s, err)
 		})
 	}

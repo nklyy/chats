@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/support"
-	"noname-realtime-support-chat/internal/support/jwt"
+	"noname-realtime-support-chat/internal/user"
+	"noname-realtime-support-chat/pkg/jwt"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
@@ -17,14 +17,14 @@ type Service interface {
 }
 
 type service struct {
-	supportSvc support.Service
-	logger     *zap.SugaredLogger
-	jwtSvc     jwt.Service
+	userSvc user.Service
+	logger  *zap.SugaredLogger
+	jwtSvc  jwt.Service
 }
 
-func NewService(supportSvc support.Service, logger *zap.SugaredLogger, jwtSvc jwt.Service) (Service, error) {
-	if supportSvc == nil {
-		return nil, errors.New("invalid support service")
+func NewService(userSvc user.Service, logger *zap.SugaredLogger, jwtSvc jwt.Service) (Service, error) {
+	if userSvc == nil {
+		return nil, errors.New("invalid user service")
 	}
 	if logger == nil {
 		return nil, errors.New("invalid logger")
@@ -33,45 +33,45 @@ func NewService(supportSvc support.Service, logger *zap.SugaredLogger, jwtSvc jw
 		return nil, errors.New("invalid jwt service")
 	}
 
-	return &service{supportSvc: supportSvc, logger: logger, jwtSvc: jwtSvc}, nil
+	return &service{userSvc: userSvc, logger: logger, jwtSvc: jwtSvc}, nil
 }
 
 func (s *service) Registration(ctx context.Context, dto *RegistrationDTO) (*string, error) {
-	supportDto, err := s.supportSvc.CreateSupport(ctx, dto.Email, dto.Name, dto.Password)
+	userDto, err := s.userSvc.CreateUser(ctx, dto.Email, dto.Name, dto.Password)
 	if err != nil {
-		s.logger.Errorf("failed to save support %v", err)
+		s.logger.Errorf("failed to save user %v", err)
 		return nil, err
 	}
 
-	return &supportDto.ID, nil
+	return &userDto.ID, nil
 }
 
 func (s *service) Login(ctx context.Context, dto *LoginDTO) (*string, *string, error) {
-	supportDto, err := s.supportSvc.GetSupportByEmail(ctx, dto.Email, true)
+	userDto, err := s.userSvc.GetUserByEmail(ctx, dto.Email, true)
 	if err != nil {
-		s.logger.Errorf("failed to find support %v", err)
+		s.logger.Errorf("failed to find user %v", err)
 		return nil, nil, err
 	}
 
-	supportEntity, err := support.MapToEntity(supportDto)
+	userEntity, err := user.MapToEntity(userDto)
 	if err != nil {
 		s.logger.Errorf("failed to conver dto %v", err)
 		return nil, nil, err
 	}
 
-	cp, err := supportEntity.CheckPassword(dto.Password)
+	cp, err := userEntity.CheckPassword(dto.Password)
 	if !cp {
 		s.logger.Errorf("failed to check password %v", err)
 		return nil, nil, err
 	}
 
-	accessToken, refreshToken, err := s.jwtSvc.CreateTokens(ctx, supportDto.ID, "support")
+	accessToken, refreshToken, err := s.jwtSvc.CreateTokens(ctx, userDto.ID, userDto.Support)
 	if err != nil {
 		s.logger.Errorf("failed to create jwt token %v", err)
 		return nil, nil, err
 	}
 
-	//support.SetOnline()
+	//user.SetOnline()
 
 	return accessToken, refreshToken, nil
 }
@@ -83,13 +83,19 @@ func (s *service) Refresh(ctx context.Context, dto *RefreshDTO) (*string, *strin
 		return nil, nil, err
 	}
 
+	userDto, err := s.userSvc.GetUserById(ctx, payload.Id, false)
+	if err != nil {
+		s.logger.Errorf("failed to find user %v", err)
+		return nil, nil, err
+	}
+
 	err = s.jwtSvc.VerifyToken(ctx, payload, false)
 	if err != nil {
 		s.logger.Errorf("failed to verify token %v", err)
 		return nil, nil, err
 	}
 
-	accessToken, refreshToken, err := s.jwtSvc.CreateTokens(ctx, payload.Id, "support")
+	accessToken, refreshToken, err := s.jwtSvc.CreateTokens(ctx, payload.Id, userDto.Support)
 	if err != nil {
 		s.logger.Errorf("failed to create jwt token %v", err)
 		return nil, nil, err

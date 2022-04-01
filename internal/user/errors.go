@@ -1,4 +1,4 @@
-package support
+package user
 
 import (
 	"noname-realtime-support-chat/pkg/codes"
@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	StatusSupportAlreadyExists      errors.Status = "support_already_exists"
+	StatusUserAlreadyExists         errors.Status = "user_already_exists"
 	StatusUserNotFound              errors.Status = "user_not_found"
 	StatusInvalidEmail              errors.Status = "invalid_email"
 	StatusInvalidName               errors.Status = "invalid_name"
@@ -15,13 +15,13 @@ const (
 	StatusToken                     errors.Status = "invalid_token"
 	StatusRequiredToken             errors.Status = "token_required"
 	StatusTokenDoesntHavePermission errors.Status = "authorization_token_doesnt_have_permission"
-	StatusFailedCreateSupport       errors.Status = "failed_create_support"
-	StatusFailedSaveSupport         errors.Status = "failed_save_support"
-	StatusFailedUpdateSupport       errors.Status = "failed_update_support"
+	StatusFailedCreateUser          errors.Status = "failed_create_user"
+	StatusFailedSaveUser            errors.Status = "failed_save_user"
+	StatusFailedUpdateUser          errors.Status = "failed_update_user"
 )
 
 var (
-	ErrAlreadyExists             = errors.New(codes.DuplicateError, StatusSupportAlreadyExists)
+	ErrAlreadyExists             = errors.New(codes.DuplicateError, StatusUserAlreadyExists)
 	ErrNotFound                  = errors.New(codes.NotFound, StatusUserNotFound)
 	ErrInvalidEmail              = errors.New(codes.BadRequest, StatusInvalidEmail)
 	ErrInvalidName               = errors.New(codes.BadRequest, StatusInvalidName)
@@ -30,7 +30,7 @@ var (
 	ErrToken                     = errors.New(codes.Unauthorized, StatusToken)
 	ErrRequiredToken             = errors.New(codes.Unauthorized, StatusRequiredToken)
 	ErrTokenDoesntHavePermission = errors.New(codes.Forbidden, StatusTokenDoesntHavePermission)
-	ErrFailedCreateSupport       = errors.New(codes.BadRequest, StatusFailedCreateSupport)
-	ErrFailedSaveSupport         = errors.New(codes.BadRequest, StatusFailedSaveSupport)
-	ErrFailedUpdateSupport       = errors.New(codes.BadRequest, StatusFailedUpdateSupport)
+	ErrFailedCreateUser          = errors.New(codes.BadRequest, StatusFailedCreateUser)
+	ErrFailedSaveUser            = errors.New(codes.BadRequest, StatusFailedSaveUser)
+	ErrFailedUpdateUser          = errors.New(codes.BadRequest, StatusFailedUpdateUser)
 )

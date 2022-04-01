@@ -1,4 +1,4 @@
-package support
+package user
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -7,18 +7,18 @@ import (
 	"time"
 )
 
-type Support struct {
+type User struct {
 	ID       primitive.ObjectID `bson:"_id"`
 	Email    string             `bson:"email"`
 	Name     string             `bson:"name"`
 	Password string             `bson:"password"`
-	Status   bool               `bson:"status"`
+	Support  bool               `bson:"support"`
 
 	CreatedAt time.Time `bson:"created_at"`
 	UpdatedAt time.Time `bson:"updated_at"`
 }
 
-func NewSupport(email, name, password string, salt *int) (*Support, error) {
+func NewUser(email, name, password string, salt *int) (*User, error) {
 	if email == "" {
 		return nil, errors.WithMessage(ErrInvalidEmail, "should be not empty")
 	}
@@ -37,42 +37,42 @@ func NewSupport(email, name, password string, salt *int) (*Support, error) {
 		return nil, errors.WithMessage(ErrInvalidPassword, err.Error())
 	}
 
-	return &Support{
+	return &User{
 		ID:        primitive.NewObjectID(),
 		Email:     email,
 		Name:      name,
 		Password:  string(hashedPassword),
-		Status:    false,
+		Support:   false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}, nil
 }
 
-func (s *Support) SetName(name string) {
+func (s *User) SetName(name string) {
 	s.Name = name
 	s.UpdatedAt = time.Now()
 }
 
-func (s *Support) SetPassword(password string) {
+func (s *User) SetPassword(password string) {
 	s.Password = password
 	s.UpdatedAt = time.Now()
 }
 
-func (s *Support) SetOnline() {
-	s.Status = true
-	s.UpdatedAt = time.Now()
-}
+//func (s *User) SetOnline() {
+//	s.Status = true
+//	s.UpdatedAt = time.Now()
+//}
+//
+//func (s *User) SetOffline() {
+//	s.Status = false
+//	s.UpdatedAt = time.Now()
+//}
 
-func (s *Support) SetOffline() {
-	s.Status = false
-	s.UpdatedAt = time.Now()
-}
-
-func (s *Support) RemovePassword() {
+func (s *User) RemovePassword() {
 	s.Password = ""
 }
 
-func (s *Support) CheckPassword(password string) (bool, error) {
+func (s *User) CheckPassword(password string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(s.Password), []byte(password))
 	if err != nil {
 		return false, ErrInvalidPassword

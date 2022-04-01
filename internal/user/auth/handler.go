@@ -22,10 +22,10 @@ func NewHandler(authSvc Service) (*Handler, error) {
 }
 
 func (h *Handler) SetupRoutes(router chi.Router) {
-	router.Post("/support/registration", h.Registration)
-	router.Post("/support/login", h.Login)
-	router.Post("/support/refresh", h.Refresh)
-	router.Post("/support/logout", h.Logout)
+	router.Post("/registration", h.Registration)
+	router.Post("/login", h.Login)
+	router.Post("/refresh", h.Refresh)
+	router.Post("/logout", h.Logout)
 }
 
 func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
