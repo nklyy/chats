@@ -1,19 +1,27 @@
 package user
 
 import (
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"noname-realtime-support-chat/pkg/errors"
 )
 
-func MapToDTO(s *User) *DTO {
+func MapToDTO(u *User) *DTO {
+	//var roomName string
+	//if u.RoomName != nil {
+	//	roomName = *u.RoomName
+	//}
+
 	return &DTO{
-		ID:        s.ID.Hex(),
-		Email:     s.Email,
-		Name:      s.Name,
-		Password:  s.Password,
-		Support:   s.Support,
-		CreatedAt: s.CreatedAt,
-		UpdatedAt: s.UpdatedAt,
+		ID:        u.ID.Hex(),
+		Email:     u.Email,
+		Name:      u.Name,
+		Password:  u.Password,
+		Support:   u.Support,
+		RoomName:  u.RoomName,
+		Free:      u.Free,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
 	}
 }
 
@@ -23,12 +31,16 @@ func MapToEntity(dto *DTO) (*User, error) {
 		return nil, errors.NewInternal(err.Error())
 	}
 
+	fmt.Println("AAADASDASDASD", dto)
+
 	return &User{
 		ID:        id,
 		Email:     dto.Email,
 		Name:      dto.Name,
 		Password:  dto.Password,
 		Support:   dto.Support,
+		RoomName:  dto.RoomName,
+		Free:      dto.Free,
 		CreatedAt: dto.CreatedAt,
 		UpdatedAt: dto.UpdatedAt,
 	}, nil

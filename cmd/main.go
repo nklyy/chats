@@ -10,7 +10,8 @@ import (
 	"log"
 	"net/http"
 	"noname-realtime-support-chat/config"
-	"noname-realtime-support-chat/internal/chat/old-chat"
+	"noname-realtime-support-chat/internal/chat"
+	"noname-realtime-support-chat/internal/chat/room"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/internal/user"
 	"noname-realtime-support-chat/internal/user/auth"
@@ -91,7 +92,7 @@ func main() {
 	}
 
 	// Services
-	jwtSvc, err := jwt.NewJwtService(
+	jwtService, err := jwt.NewJwtService(
 		cfg.JwtSecretAccess,
 		&cfg.JwtExpiryAccess,
 		cfg.JwtSecretRefresh,
@@ -107,18 +108,18 @@ func main() {
 		zapLogger.Fatalf("failde to create user service: %v", err)
 	}
 
-	userAuthService, err := auth.NewService(userService, zapLogger, jwtSvc)
+	userAuthService, err := auth.NewService(userService, zapLogger, jwtService)
 	if err != nil {
 		zapLogger.Fatalf("failde to create user service: %v", err)
 	}
 
-	chatService, err := old_chat.NewService(zapLogger, redisChatClient, make(map[*old_chat.Client]bool), make(map[*old_chat.Room]bool), jwtSvc)
-	if err != nil {
-		zapLogger.Fatalf("failde to create chat service: %v", err)
-	}
+	//chatService, err := old_chat.NewService(zapLogger, redisChatClient, make(map[*old_chat.Client]bool), make(map[*old_chat.Room]bool), jwtSvc)
+	//if err != nil {
+	//	zapLogger.Fatalf("failde to create chat service: %v", err)
+	//}
 
 	//Middleware
-	supportMiddleware, err := user.NewMiddleware(jwtSvc, userService, zapLogger)
+	supportMiddleware, err := user.NewMiddleware(jwtService, userService, zapLogger)
 	if err != nil {
 		zapLogger.Fatalf("failed to set up user middleware %v", err)
 	}
@@ -148,10 +149,10 @@ func main() {
 		zapLogger.Fatalf("failde to create user auth handler: %v", err)
 	}
 
-	chatHandler, err := old_chat.NewHandler(chatService)
-	if err != nil {
-		zapLogger.Fatalf("failde to create chat handler: %v", err)
-	}
+	//chatHandler, err := old_chat.NewHandler(chatService)
+	//if err != nil {
+	//	zapLogger.Fatalf("failde to create chat handler: %v", err)
+	//}
 
 	router.Route("/api/v1/auth", func(r chi.Router) {
 		userAuthHandler.SetupRoutes(r)
@@ -162,7 +163,35 @@ func main() {
 
 		healthHandler.SetupRoutes(r)
 		userHandler.SetupRoutes(supportRoute)
-		chatHandler.SetupRoutes(r)
+		//chatHandler.SetupRoutes(r)
+	})
+
+	// Chat
+	roomRepository, err := room.NewRepository(db, cfg.MongoDbName, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up room repository %v", err)
+	}
+
+	roomService, err := room.NewService(roomRepository, userService, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up room service %v", err)
+	}
+
+	chatService, err := chat.NewService(redisChatClient, roomService, jwtService, userService, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up chat service %v", err)
+	}
+
+	chatHandler, err := chat.NewHandler(chatService)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up chat handler %v", err)
+	}
+
+	chatMiddleware, err := chat.NewMiddleware(jwtService, userService, zapLogger)
+
+	router.Route("/", func(r chi.Router) {
+		chatRoute := r.With(chatMiddleware.JwtMiddleware)
+		chatHandler.SetupRoutes(chatRoute)
 	})
 
 	// Start App

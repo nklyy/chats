@@ -1,7 +1,8 @@
-package chat
+package old_chat
 
 import (
 	gerrors "errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -29,6 +30,7 @@ func NewHandler(chatSvc Service) (*Handler, error) {
 
 func (h *Handler) SetupRoutes(router chi.Router) {
 	router.HandleFunc("/chat", h.Chat)
+	router.Get("/get-user", h.GetUser)
 }
 
 func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
@@ -38,9 +40,25 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.chatSvc.Chat(r.Context(), ws)
+	err = h.chatSvc.Chat(ws, r.URL.Query().Get("token"), r.URL.Query().Get("userId"), r.URL.Query().Get("roomId"))
 	if err != nil {
 		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))
 		return
 	}
+}
+
+func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
+	user, err := h.chatSvc.GetUser()
+	if err != nil {
+		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))
+		return
+	}
+
+	if user == nil {
+		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal("No user yet"))
+		return
+	}
+	fmt.Println("GET USER", user)
+
+	respond.Respond(w, http.StatusOK, map[string]string{"userId": user.Id, "roomId": user.Room.Name})
 }

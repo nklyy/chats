@@ -13,6 +13,8 @@ type User struct {
 	Name     string             `bson:"name"`
 	Password string             `bson:"password"`
 	Support  bool               `bson:"support"`
+	RoomName *string            `bson:"roomName"`
+	Free     bool               `bson:"free"`
 
 	CreatedAt time.Time `bson:"created_at"`
 	UpdatedAt time.Time `bson:"updated_at"`
@@ -43,6 +45,8 @@ func NewUser(email, name, password string, salt *int) (*User, error) {
 		Name:      name,
 		Password:  string(hashedPassword),
 		Support:   false,
+		RoomName:  nil,
+		Free:      true,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}, nil
@@ -50,6 +54,16 @@ func NewUser(email, name, password string, salt *int) (*User, error) {
 
 func (s *User) SetName(name string) {
 	s.Name = name
+	s.UpdatedAt = time.Now()
+}
+
+func (s *User) SetFreeStatus(status bool) {
+	s.Free = status
+	s.UpdatedAt = time.Now()
+}
+
+func (s *User) SetRoom(roomName *string) {
+	s.RoomName = roomName
 	s.UpdatedAt = time.Now()
 }
 
