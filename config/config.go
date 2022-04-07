@@ -27,7 +27,7 @@ func Get(path string) (*Config, error) {
 	viper.SetConfigFile(".env")
 	//viper.SetConfigName("app")
 	//viper.SetConfigType("env")
-	viper.AutomaticEnv()
+	//viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
 	if err != nil {
