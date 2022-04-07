@@ -18,6 +18,8 @@ services:
     image: redis:latest
     container_name: chat-redis-auth
     restart: on-failure
+    command:
+      - --port ${REDIS_PORT_AUTH}
     ports:
       - ${REDIS_PORT_AUTH}:${REDIS_PORT_AUTH}
     volumes:
@@ -29,24 +31,12 @@ services:
     image: redis:latest
     container_name: chat-redis
     restart: on-failure
+    command:
+      - --port ${REDIS_PORT_CHAT}
     ports:
       - ${REDIS_PORT_CHAT}:${REDIS_PORT_CHAT}
     volumes:
       - ./data/redis-chat:/data
-    networks:
-      - chat
-
-  rabbit:
-    image: rabbitmq:latest
-    container_name: chat-rabbitmq
-    restart: on-failure
-    ports:
-      - 127.0.0.1:${AMQP_SERVER_PORT}:${AMQP_SERVER_PORT}
-      - ${AMQP_CONSUMER_PORT}:${AMQP_CONSUMER_PORT}   # for sender and consumer connections
-      - ${AMQP_SERVER_PORT}:${AMQP_SERVER_PORT} # for serve RabbitMQ GUI
-    volumes:
-      - ./data/rabbitmq/lib:/var/lib/rabbitmq
-      - ./data/rabbitmq/log:/var/log/rabbitmq
     networks:
       - chat
 
@@ -60,7 +50,6 @@ services:
       - mongodb
       - redisAuth
       - redisChat
-      - rabbit
     ports:
       - ${APP_PORT}:${APP_PORT}
     volumes:
@@ -78,7 +67,6 @@ services:
       - SALT=${SALT}
       - REDIS_HOST=chat-redis-auth
       - REDIS_PORT=${REDIS_PORT}
-      - AMQP_SERVER_URL=amqp://guest:guest@chat-rabbitmq:5672
     networks:
       - chat
 
