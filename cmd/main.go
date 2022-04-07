@@ -59,13 +59,13 @@ func main() {
 	zapLogger.Info("DB connected successfully")
 
 	// Redis
-	redisAuthClient, err := redis.NewClient(cfg.RedisHost, cfg.RedisPortAuth)
+	redisAuthClient, err := redis.NewClient(cfg.RedisHostAuth, cfg.RedisPortAuth)
 	if err != nil {
 		zapLogger.Fatalf("failed to connect to auth redis: %v", err)
 	}
 	zapLogger.Info("Redis(auth) connected successfully")
 
-	redisChatClient, err := redis.NewClient(cfg.RedisHost, cfg.RedisPortChat)
+	redisChatClient, err := redis.NewClient(cfg.RedisHostChat, cfg.RedisPortChat)
 	if err != nil {
 		zapLogger.Fatalf("failed to connect to chat redis: %v", err)
 	}

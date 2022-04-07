@@ -9,7 +9,6 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
     volumes:
-      - ./data/mongo:/data/db
       - ./data/mongo/.mongodb-tmp:/data/db
     networks:
       - chat
@@ -52,8 +51,8 @@ services:
       - redisChat
     ports:
       - ${APP_PORT}:${APP_PORT}
-    volumes:
-      - ./data/app:/app
+#    volumes:
+#      - ./data/app:/build
 
     environment:
       - PORT=${PORT}
@@ -65,8 +64,10 @@ services:
       - JWT_EXPIRY_REFRESH=${JWT_EXPIRY_REFRESH}
       - AUTO_LOGOUT=${AUTO_LOGOUT}
       - SALT=${SALT}
-      - REDIS_HOST=chat-redis-auth
-      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_HOST_AUTH=chat-redis-auth
+      - REDIS_PORT_AUTH=${REDIS_PORT_AUTH}
+      - REDIS_HOST_CHAT=chat-redis
+      - REDIS_PORT_CHAT=${REDIS_PORT_CHAT}
     networks:
       - chat
 

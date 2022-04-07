@@ -38,7 +38,7 @@ test: gen-mock
 
 build: clean deps
 	$(call pprint, Building app...)
-	go build -o ./bin/server ./cmd
+	go build -o ./cmd/main ./cmd
 	$(call completed)
 
 run:
