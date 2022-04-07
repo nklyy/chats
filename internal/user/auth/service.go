@@ -14,6 +14,7 @@ type Service interface {
 	Login(ctx context.Context, dto *LoginDTO) (*string, *string, error)
 	Refresh(ctx context.Context, dto *RefreshDTO) (*string, *string, error)
 	Logout(ctx context.Context, dto *LogoutDTO) error
+	Check(ctx context.Context, dto *CheckDTO) (*CheckResponseDTO, error)
 }
 
 type service struct {
@@ -124,4 +125,37 @@ func (s *service) Logout(ctx context.Context, dto *LogoutDTO) error {
 	}
 
 	return nil
+}
+
+func (s *service) Check(ctx context.Context, dto *CheckDTO) (*CheckResponseDTO, error) {
+	payload, err := s.jwtSvc.ParseToken(dto.Token, true)
+	if err != nil {
+		s.logger.Errorf("failed parse token %v", err)
+		return nil, err
+	}
+
+	err = s.jwtSvc.VerifyToken(ctx, payload, true)
+	if err != nil {
+		s.logger.Errorf("failed to verify token %v", err)
+		return nil, err
+	}
+
+	u, err := s.userSvc.GetUserById(ctx, payload.Id, false)
+	if err != nil {
+		s.logger.Errorf("failed to get user %v", err)
+		return nil, err
+	}
+
+	var isRoom bool
+	if u.RoomName == nil {
+		isRoom = false
+	} else {
+		isRoom = true
+	}
+
+	return &CheckResponseDTO{
+		UserId: payload.Id,
+		Role:   payload.Role,
+		IsRoom: isRoom,
+	}, nil
 }

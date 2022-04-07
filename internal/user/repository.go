@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"errors"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -95,8 +94,6 @@ func (r *repository) GetFreeUser(ctx context.Context) (*User, error) {
 	if len(users) == 0 {
 		return nil, ErrNoUsersYet
 	}
-
-	fmt.Println(users)
 
 	return users[0], nil
 }

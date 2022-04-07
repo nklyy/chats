@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -12,6 +13,8 @@ import (
 type Repository interface {
 	GetRoomByName(ctx context.Context, id string) (*Model, error)
 	CreateRoom(ctx context.Context, room *Model) (string, error)
+	UpdateRoom(ctx context.Context, model *Model) error
+	DeleteRoom(ctx context.Context, name string) error
 }
 
 type repository struct {
@@ -74,4 +77,26 @@ func (r *repository) CreateRoom(ctx context.Context, room *Model) (string, error
 	}
 
 	return room.ID.Hex(), nil
+}
+
+func (r *repository) UpdateRoom(ctx context.Context, model *Model) error {
+	_, err := r.db.Database(r.dbName).Collection("rooms").UpdateOne(ctx, bson.M{"name": model.Name},
+		bson.D{primitive.E{Key: "$set", Value: model}})
+
+	if err != nil {
+		r.logger.Errorf("failed to update room %v", err)
+		return ErrFailedUpdateRoom
+	}
+
+	return nil
+}
+
+func (r *repository) DeleteRoom(ctx context.Context, name string) error {
+	_, err := r.db.Database(r.dbName).Collection("rooms").DeleteOne(ctx, bson.M{"name": name})
+	if err != nil {
+		r.logger.Errorf("failed to delete room %v", err)
+		return ErrFailedDeleteRoom
+	}
+
+	return nil
 }

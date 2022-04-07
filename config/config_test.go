@@ -56,7 +56,7 @@ func TestInit(t *testing.T) {
 			name: "Test config file!",
 			args: args{
 				env: env{
-					port:             ":5000",
+					port:             "5000",
 					environment:      "development",
 					mongoDbName:      "example",
 					mongoDbUrl:       "http://127.0.0.1",
@@ -73,7 +73,7 @@ func TestInit(t *testing.T) {
 				},
 			},
 			want: &config.Config{
-				PORT:             ":5000",
+				PORT:             "5000",
 				Environment:      "development",
 				MongoDbName:      "example",
 				MongoDbUrl:       "http://127.0.0.1",

@@ -1,7 +1,6 @@
 package room
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 
@@ -63,7 +62,7 @@ func (c *Client) ReadPump(msgHandleFunc HandlerFunc) {
 			break
 		}
 
-		fmt.Println(string(jsonMessage))
+		//fmt.Println(string(jsonMessage))
 
 		msgHandleFunc(jsonMessage)
 	}

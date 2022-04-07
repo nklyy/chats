@@ -13,7 +13,7 @@ type Room struct {
 	ID        primitive.ObjectID `bson:"_id"`
 	Name      string             `bson:"name"`
 	Clients   map[*Client]bool
-	Broadcast chan *Message
+	Broadcast chan *BroadcastMessage
 }
 
 func NewRoom(name string) (*Room, error) {
@@ -25,7 +25,7 @@ func NewRoom(name string) (*Room, error) {
 		ID:        primitive.NewObjectID(),
 		Name:      name,
 		Clients:   make(map[*Client]bool),
-		Broadcast: make(chan *Message),
+		Broadcast: make(chan *BroadcastMessage),
 	}, nil
 }
 
@@ -39,7 +39,7 @@ func (r *Room) RunRoom(redis *redis.Client) {
 			if err != nil {
 				log.Println(err)
 			}
-			r.publishRoomMessage(redis, j, message.TargetRoom)
+			r.publishRoomMessage(redis, j, message.RoomName)
 		}
 	}
 }

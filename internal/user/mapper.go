@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"noname-realtime-support-chat/pkg/errors"
 )
@@ -30,8 +29,6 @@ func MapToEntity(dto *DTO) (*User, error) {
 	if err != nil {
 		return nil, errors.NewInternal(err.Error())
 	}
-
-	fmt.Println("AAADASDASDASD", dto)
 
 	return &User{
 		ID:        id,

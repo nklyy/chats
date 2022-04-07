@@ -6,9 +6,16 @@ import (
 )
 
 func MapToDTO(r *Model) *DTO {
+
+	var messages []*RoomMessage
+	if r.Messages != nil {
+		messages = *r.Messages
+	}
+
 	return &DTO{
-		ID:   r.ID.Hex(),
-		Name: r.Name,
+		ID:       r.ID.Hex(),
+		Name:     r.Name,
+		Messages: &messages,
 	}
 }
 
@@ -19,7 +26,8 @@ func MapToEntity(dto *DTO) (*Model, error) {
 	}
 
 	return &Model{
-		ID:   id,
-		Name: dto.Name,
+		ID:       id,
+		Name:     dto.Name,
+		Messages: dto.Messages,
 	}, nil
 }

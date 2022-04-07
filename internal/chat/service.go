@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -13,6 +12,7 @@ import (
 	"noname-realtime-support-chat/internal/chat/room"
 	"noname-realtime-support-chat/internal/user"
 	"noname-realtime-support-chat/pkg/jwt"
+	"time"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
@@ -88,6 +88,7 @@ func (s *service) registerClientAndCreateRoom(ctx context.Context, client *room.
 				client.Room = r
 				r.Clients[client] = true
 				go r.RunRoom(s.redisClient)
+				s.rooms[r] = true
 			} else {
 				client.Room = r
 				r.Clients[client] = true
@@ -98,6 +99,7 @@ func (s *service) registerClientAndCreateRoom(ctx context.Context, client *room.
 			client.Room = r
 			r.Clients[client] = true
 			go r.RunRoom(s.redisClient)
+			s.rooms[r] = true
 		}
 	}
 
@@ -108,7 +110,19 @@ func (s *service) registerClientAndCreateRoom(ctx context.Context, client *room.
 			uEntity, _ := user.MapToEntity(u)
 			var emptyRoom string
 			uEntity.SetRoom(&emptyRoom)
-			s.userSvc.UpdateUser(ctx, user.MapToDTO(uEntity))
+
+			//////////
+			err := s.userSvc.UpdateUser(ctx, user.MapToDTO(uEntity))
+			if err != nil {
+				msg, _ := s.encodeMessage(room.MessageResponse{
+					Action:  "",
+					Message: "",
+					From:    "",
+					Error:   "failed update user",
+				})
+				client.Send <- msg
+				return
+			}
 		} else {
 			r.Clients[client] = true
 		}
@@ -119,7 +133,7 @@ func (s *service) registerClientAndCreateRoom(ctx context.Context, client *room.
 
 func (s *service) findRoom(ctx context.Context, roomName string) *room.Room {
 	var foundRoom *room.Room
-	for r, _ := range s.rooms {
+	for r := range s.rooms {
 		if r.Name == roomName {
 			foundRoom = r
 			break
@@ -145,6 +159,15 @@ func (s *service) runRoomFromRepo(ctx context.Context, roomName string) *room.Ro
 	return r
 }
 
+func (s *service) encodeMessage(msg room.MessageResponse) ([]byte, error) {
+	encMsg, err := json.Marshal(msg)
+	if err != nil {
+		s.logger.Errorf("failed to encode message %v", err)
+		return nil, err
+	}
+	return encMsg, err
+}
+
 func (s *service) messageHandler(jsonMessage []byte) {
 	var message room.Message
 	if err := json.Unmarshal(jsonMessage, &message); err != nil {
@@ -152,69 +175,85 @@ func (s *service) messageHandler(jsonMessage []byte) {
 		return
 	}
 
-	fmt.Println(message)
 	switch message.Action {
-	case "join-room":
-		fmt.Println("ASDASDSADASDASDASDSADSADASDSA")
-		var u *room.Client
-		for cl, _ := range s.clients {
-			fmt.Println(cl)
-			if cl.Id == message.User {
-				u = cl
-				break
-			}
-		}
-
-		r := s.findRoom(context.Background(), message.TargetRoom)
-		if r == nil {
-			u.Send <- []byte("Room doesn't exist")
-			return
-		}
-		r.Clients[u] = true
-		fmt.Println("ROOM JOIN", r.Name)
-
-		//fmt.Println("USER JOIN", u)
-		//
-		//for cl, _ := range s.clients {
-		//	if cl.Room != nil && cl.Room.Name == message.TargetRoom {
-		//		cl.Room.Clients[u] = true
-		//		fmt.Println("ROOM JOIN", cl.Room)
-		//	}
-		//}
 	case "publish-room":
-		//for c, _ := range s.clients {
-		//	if c.Room != nil && c.Room.Name == message.TargetRoom {
-		//		//j, err := json.Marshal(message)
-		//		//if err != nil {
-		//		//	log.Println(err)
-		//		//}
-		//		//v.Room.publishRoomMessage(s.redisClient, j)
-		//		c.Room.broadcast <- &message
-		//	}
-		//}
+		uPayload, _ := s.jwtSvc.ParseToken(message.Token, true)
+		dbUser, _ := s.userSvc.GetUserById(context.Background(), uPayload.Id, false)
+		dbRoom, _ := s.roomSvc.GetRoomByName(context.Background(), *dbUser.RoomName)
 
-		for r, _ := range s.rooms {
-			if r.Name == message.TargetRoom {
-				//j, err := json.Marshal(message)
-				//if err != nil {
-				//	log.Println(err)
-				//}
-				//v.Room.publishRoomMessage(s.redisClient, j)
-				r.Broadcast <- &message
+		for r := range s.rooms {
+			if r.Name == *dbUser.RoomName {
+				var msg []*room.RoomMessage
+
+				if dbRoom.Messages == nil {
+					msg = append(msg, &room.RoomMessage{
+						Id:      dbUser.ID,
+						Time:    time.Now(),
+						Message: message.Message,
+					})
+				} else {
+					msg = append(*dbRoom.Messages, &room.RoomMessage{
+						Id:      dbUser.ID,
+						Time:    time.Now(),
+						Message: message.Message,
+					})
+				}
+				dbRoom.Messages = &msg
+
+				////////
+				err := s.roomSvc.UpdateRoom(context.Background(), dbRoom)
+				if err != nil {
+
+					r.Broadcast <- &room.BroadcastMessage{
+						Action: message.Action,
+						Message: room.MessageResponse{
+							Action:  "",
+							Message: "",
+							From:    "",
+							Error:   "failed update room",
+						},
+						RoomName: *dbUser.RoomName,
+					}
+				}
+
+				r.Broadcast <- &room.BroadcastMessage{
+					Action: message.Action,
+					Message: room.MessageResponse{
+						Action:  message.Action,
+						Message: message.Message,
+						From:    dbUser.ID,
+						Error:   nil,
+					},
+					RoomName: *dbUser.RoomName,
+				}
 			}
 		}
 	case "disconnect":
+		uPayload, _ := s.jwtSvc.ParseToken(message.Token, true)
+		dbUser, _ := s.userSvc.GetUserById(context.Background(), uPayload.Id, false)
 
-		for cl, _ := range s.clients {
-			if cl.Id == message.User {
+		for r := range s.rooms {
+			if r.Name == *dbUser.RoomName {
+				for client := range r.Clients {
+					rUser, _ := s.userSvc.GetUserById(context.Background(), client.Id, true)
+					userEntity, _ := user.MapToEntity(rUser)
+					userEntity.SetRoom(nil)
+					userEntity.SetFreeStatus(true)
+					s.userSvc.UpdateUser(context.Background(), user.MapToDTO(userEntity))
 
-				//for c, _ := range v.Room.clients {
-				//	c.Connection.Close()
-				//}
+					close(client.Send)
+					client.Connection.Close()
 
-				cl.Connection.Close()
-				delete(s.clients, cl)
-				fmt.Println(s.clients, len(s.clients))
+					for sCl, _ := range s.clients {
+						if sCl.Id == client.Id {
+							delete(s.clients, client)
+						}
+					}
+				}
+
+				s.roomSvc.DeleteRoom(context.Background(), r.Name)
+				delete(s.rooms, r)
+				break
 			}
 		}
 	}
