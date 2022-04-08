@@ -18,6 +18,7 @@ import (
 	"noname-realtime-support-chat/pkg/logger"
 	"noname-realtime-support-chat/pkg/mongodb"
 	"noname-realtime-support-chat/pkg/redis"
+	"os"
 	"syscall"
 )
 
@@ -43,6 +44,15 @@ func main() {
 			log.Fatalf("can't setup zap logger: %v", err)
 		}
 	}(zapLogger)
+
+	// Create roomKey folder if bot exist
+	_, err = os.Stat("keys")
+	if os.IsNotExist(err) {
+		err = os.Mkdir("keys", 0755)
+		if err != nil {
+			zapLogger.Fatalf("failed to create roomKeys folder %v", err)
+		}
+	}
 
 	// Connect to database
 	db, ctx, cancel, err := mongodb.NewConnection(cfg)
