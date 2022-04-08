@@ -81,18 +81,6 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//if !u.Support && payload.Role == "user" {
-		//	err = m.jwtSvc.ExtendExpire(r.Context(), payload)
-		//	if err != nil {
-		//		m.logger.Errorf("failed to extend expire token: %v", err)
-		//		respond.Respond(w, errors.HTTPCode(err), err)
-		//		return
-		//	}
-		//	ctx := context.WithValue(r.Context(), "user", &u)
-		//	next.ServeHTTP(w, r.WithContext(ctx))
-		//	return
-		//}
-
 		err = m.jwtSvc.ExtendExpire(r.Context(), payload)
 		if err != nil {
 			m.logger.Errorf("failed to extend expire token: %v", err)
@@ -101,6 +89,5 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 		}
 		ctx := context.WithValue(r.Context(), "user", *u)
 		next.ServeHTTP(w, r.WithContext(ctx))
-		//next.ServeHTTP(w, r)
 	})
 }

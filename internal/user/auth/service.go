@@ -72,8 +72,6 @@ func (s *service) Login(ctx context.Context, dto *LoginDTO) (*string, *string, e
 		return nil, nil, err
 	}
 
-	//user.SetOnline()
-
 	return accessToken, refreshToken, nil
 }
 

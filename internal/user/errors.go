@@ -19,7 +19,7 @@ const (
 	StatusFailedSaveUser            errors.Status = "failed_save_user"
 	StatusFailedUpdateUser          errors.Status = "failed_update_user"
 	StatusFailedFindFreeUsers       errors.Status = "failed_find_free_users"
-	StatusNoUsersYet                errors.Status = "no_users_yes"
+	StatusNoUsersYet                errors.Status = "no_users_yet"
 )
 
 var (

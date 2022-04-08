@@ -72,16 +72,6 @@ func (s *User) SetPassword(password string) {
 	s.UpdatedAt = time.Now()
 }
 
-//func (s *User) SetOnline() {
-//	s.Status = true
-//	s.UpdatedAt = time.Now()
-//}
-//
-//func (s *User) SetOffline() {
-//	s.Status = false
-//	s.UpdatedAt = time.Now()
-//}
-
 func (s *User) RemovePassword() {
 	s.Password = ""
 }
