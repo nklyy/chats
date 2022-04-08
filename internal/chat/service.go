@@ -141,13 +141,13 @@ func (s *service) findRoom(ctx context.Context, roomName string) *room.Room {
 	}
 
 	if foundRoom == nil {
-		foundRoom = s.runRoomFromRepo(ctx, roomName)
+		foundRoom = s.runRoomFromRepository(ctx, roomName)
 	}
 
 	return foundRoom
 }
 
-func (s *service) runRoomFromRepo(ctx context.Context, roomName string) *room.Room {
+func (s *service) runRoomFromRepository(ctx context.Context, roomName string) *room.Room {
 	var r *room.Room
 	dbRoom, _ := s.roomSvc.GetRoomByName(ctx, roomName)
 	if dbRoom != nil {
@@ -171,7 +171,7 @@ func (s *service) encodeMessage(msg room.MessageResponse) ([]byte, error) {
 func (s *service) messageHandler(jsonMessage []byte) {
 	var message room.Message
 	if err := json.Unmarshal(jsonMessage, &message); err != nil {
-		log.Printf("Error on unmarshal JSON message %s", err)
+		s.logger.Errorf("Error on unmarshal JSON message %s", err)
 		return
 	}
 
@@ -239,13 +239,23 @@ func (s *service) messageHandler(jsonMessage []byte) {
 					userEntity, _ := user.MapToEntity(rUser)
 					userEntity.SetRoom(nil)
 					userEntity.SetFreeStatus(true)
-					s.userSvc.UpdateUser(context.Background(), user.MapToDTO(userEntity))
+					err := s.userSvc.UpdateUser(context.Background(), user.MapToDTO(userEntity))
+					if err != nil {
+						msg, _ := s.encodeMessage(room.MessageResponse{
+							Action:  "",
+							Message: "",
+							From:    "",
+							Error:   "failed update user",
+						})
+						client.Send <- msg
+						return
+					}
 
 					close(client.Send)
 					client.Connection.Close()
 
-					for sCl, _ := range s.clients {
-						if sCl.Id == client.Id {
+					for serverClient := range s.clients {
+						if serverClient.Id == client.Id {
 							delete(s.clients, client)
 						}
 					}

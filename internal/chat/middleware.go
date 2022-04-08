@@ -46,14 +46,6 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//authorizationParts := strings.Split(authorization, " ")
-		//
-		//if len(authorizationParts) != 2 || len(authorizationParts[1]) == 0 || authorizationParts[0] != "Bearer" {
-		//	m.logger.Error("invalid auth token")
-		//	respond.Respond(w, errors.HTTPCode(ErrToken), ErrToken)
-		//	return
-		//}
-
 		payload, err := m.jwtSvc.ParseToken(token, true)
 		if err != nil {
 			m.logger.Errorf("failed to parse auth token: %v", err)
