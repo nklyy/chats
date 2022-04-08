@@ -62,8 +62,6 @@ func (c *Client) ReadPump(msgHandleFunc HandlerFunc) {
 			break
 		}
 
-		//fmt.Println(string(jsonMessage))
-
 		msgHandleFunc(jsonMessage)
 	}
 }

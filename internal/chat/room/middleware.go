@@ -69,12 +69,6 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//if payload.Role == "user" {
-		//	m.logger.Error("token doesn't have permission")
-		//	respond.Respond(w, errors.HTTPCode(ErrTokenDoesntHavePermission), ErrTokenDoesntHavePermission)
-		//	return
-		//}
-
 		u, err := m.userSvc.GetUserById(r.Context(), payload.Id, true)
 		if err != nil {
 			m.logger.Errorf("failed to extend expire token: %v", err)

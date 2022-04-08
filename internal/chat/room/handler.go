@@ -22,10 +22,10 @@ func NewHandler(roomSvc Service) (*Handler, error) {
 }
 
 func (h *Handler) SetupRoutes(router chi.Router) {
-	router.HandleFunc("/get-room", h.GetRoom)
+	router.HandleFunc("/get-room-messages", h.GetRoomMessages)
 }
 
-func (h *Handler) GetRoom(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetRoomMessages(w http.ResponseWriter, r *http.Request) {
 	userCtxValue := r.Context().Value("user")
 	if userCtxValue == nil {
 		respond.Respond(w, http.StatusUnauthorized, errors.NewInternal("Not authenticated"))
