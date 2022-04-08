@@ -55,7 +55,7 @@ services:
 #      - ./data/app:/build
 
     environment:
-      - PORT=${PORT}
+      - PORT=${APP_PORT}
       - MONGO_DB_NAME=${MONGO_DB_NAME}
       - MONGO_DB_URL=mongodb://chat-mongodb:${MONGO_PORT}/${MONGO_DB_NAME}
       - JWT_SECRET_ACCESS=${JWT_SECRET_ACCESS}

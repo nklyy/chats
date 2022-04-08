@@ -1,44 +1,58 @@
 package config
 
 import (
-	"fmt"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
+	"sync"
 )
 
 type Config struct {
-	PORT             string `mapstructure:"PORT"`
-	Environment      string `mapstructure:"APP_ENV"`
-	MongoDbName      string `mapstructure:"MONGO_DB_NAME"`
-	MongoDbUrl       string `mapstructure:"MONGO_DB_URL"`
-	Salt             int    `mapstructure:"SALT"`
-	JwtSecretAccess  string `mapstructure:"JWT_SECRET_ACCESS"`
-	JwtExpiryAccess  int    `mapstructure:"JWT_EXPIRY_ACCESS"`
-	JwtSecretRefresh string `mapstructure:"JWT_SECRET_REFRESH"`
-	JwtExpiryRefresh int    `mapstructure:"JWT_EXPIRY_REFRESH"`
-	AutoLogout       int    `mapstructure:"AUTO_LOGOUT"`
-	RedisHostAuth    string `mapstructure:"REDIS_HOST_AUTH"`
-	RedisPortAuth    string `mapstructure:"REDIS_PORT_AUTH"`
-	RedisHostChat    string `mapstructure:"REDIS_HOST_CHAT"`
-	RedisPortChat    string `mapstructure:"REDIS_PORT_CHAT"`
-	RabbitMqUrl      string `mapstructure:"AMQP_SERVER_URL"`
+	PORT        string `required:"true" default:"5000" envconfig:"PORT"`
+	Environment string `required:"true" envconfig:"APP_ENV"`
+	Salt        int    `required:"true" envconfig:"SALT"`
+	MongoDb
+	Jwt
+	Redis
 }
 
-func Get(path string) (*Config, error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.AutomaticEnv()
-	viper.SetConfigType("env")
+type MongoDb struct {
+	MongoDbName string `required:"true" envconfig:"MONGO_DB_NAME"`
+	MongoDbUrl  string `required:"true" envconfig:"MONGO_DB_URL"`
+}
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		return nil, err
-	}
+type Jwt struct {
+	JwtSecretAccess  string `required:"true" envconfig:"JWT_SECRET_ACCESS"`
+	JwtExpiryAccess  int    `required:"true" envconfig:"JWT_EXPIRY_ACCESS"`
+	JwtSecretRefresh string `required:"true" envconfig:"JWT_SECRET_REFRESH"`
+	JwtExpiryRefresh int    `required:"true" envconfig:"JWT_EXPIRY_REFRESH"`
+	AutoLogout       int    `required:"true" envconfig:"AUTO_LOGOUT"`
+}
 
-	var configuration Config
-	err = viper.Unmarshal(&configuration)
-	if err != nil {
-		fmt.Printf("Unable to decode into struct, %v", err)
-	}
+type Redis struct {
+	RedisHostAuth string `required:"true" envconfig:"REDIS_HOST_AUTH"`
+	RedisPortAuth string `required:"true" envconfig:"REDIS_PORT_AUTH"`
+	RedisHostChat string `required:"true" envconfig:"REDIS_HOST_CHAT"`
+	RedisPortChat string `required:"true" envconfig:"REDIS_PORT_CHAT"`
+}
 
-	return &configuration, nil
+var (
+	once   sync.Once
+	config *Config
+)
+
+func Get() (*Config, error) {
+	var err error
+	once.Do(func() {
+		var cfg Config
+		// If you run it locally and through terminal please set up this in Load function (../.env)
+		_ = godotenv.Load(".env")
+
+		if err = envconfig.Process("", &cfg); err != nil {
+			return
+		}
+
+		config = &cfg
+	})
+
+	return config, err
 }
