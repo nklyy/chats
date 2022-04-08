@@ -14,7 +14,9 @@ import (
 type Repository interface {
 	GetUserById(ctx context.Context, id string) (*User, error)
 	GetUserByEmail(ctx context.Context, id string) (*User, error)
+	GetFreeUser(ctx context.Context) (*User, error)
 	CreateUser(ctx context.Context, user *User) (string, error)
+	UpdateUser(ctx context.Context, user *User) error
 }
 
 type repository struct {
@@ -73,6 +75,27 @@ func (r *repository) GetUserByEmail(ctx context.Context, email string) (*User, e
 	}
 
 	return &user, nil
+}
+
+func (r *repository) GetFreeUser(ctx context.Context) (*User, error) {
+	var users []*User
+
+	cursor, err := r.db.Database(r.dbName).Collection("user").Find(ctx, bson.M{"support": bson.M{"$eq": false}, "free": bson.M{"$eq": true}, "roomName": bson.M{"$ne": nil}})
+	if err != nil {
+		r.logger.Errorf("failed to get users: %v", err)
+		return nil, ErrFailedFindFreeUsers
+	}
+
+	if err = cursor.All(ctx, &users); err != nil {
+		r.logger.Errorf("failed to get users: %v", err)
+		return nil, ErrFailedFindFreeUsers
+	}
+
+	if len(users) == 0 {
+		return nil, ErrNoUsersYet
+	}
+
+	return users[0], nil
 }
 
 func (r *repository) CreateUser(ctx context.Context, user *User) (string, error) {

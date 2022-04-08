@@ -1,11 +1,12 @@
 package chat
 
 import (
-	"fmt"
+	gerrors "errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
-	"log"
 	"net/http"
+	"noname-realtime-support-chat/pkg/errors"
+	"noname-realtime-support-chat/pkg/respond"
 )
 
 var upgrader = websocket.Upgrader{
@@ -15,11 +16,15 @@ var upgrader = websocket.Upgrader{
 }
 
 type Handler struct {
+	chatSvc Service
 }
 
-func NewHandler() (*Handler, error) {
+func NewHandler(chatSvc Service) (*Handler, error) {
+	if chatSvc == nil {
+		return nil, gerrors.New("invalid chat service")
+	}
 
-	return &Handler{}, nil
+	return &Handler{chatSvc: chatSvc}, nil
 }
 
 func (h *Handler) SetupRoutes(router chi.Router) {
@@ -29,18 +34,13 @@ func (h *Handler) SetupRoutes(router chi.Router) {
 func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatal(err)
+		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))
+		return
 	}
 
-	fmt.Println(ws.RemoteAddr())
+	err = h.chatSvc.Chat(r.Context(), ws)
+	if err != nil {
+		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))
+		return
+	}
 }
-
-//curl  --include \
-//--no-buffer \
-//--header "Connection: Upgrade" \
-//--header "Upgrade: websocket" \
-//--header "Host: localhost:5000" \
-//--header "Origin: http://localhost:5000" \
-//--header "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" \
-//--header "Sec-WebSocket-Version: 13" \
-//http://localhost:5000/api/v1/chat

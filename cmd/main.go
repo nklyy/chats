@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -10,7 +9,8 @@ import (
 	"log"
 	"net/http"
 	"noname-realtime-support-chat/config"
-	"noname-realtime-support-chat/internal/chat/old-chat"
+	"noname-realtime-support-chat/internal/chat"
+	"noname-realtime-support-chat/internal/chat/room"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/internal/user"
 	"noname-realtime-support-chat/internal/user/auth"
@@ -18,11 +18,12 @@ import (
 	"noname-realtime-support-chat/pkg/logger"
 	"noname-realtime-support-chat/pkg/mongodb"
 	"noname-realtime-support-chat/pkg/redis"
+	"os"
 	"syscall"
 )
 
 func main() {
-	cfg, err := config.Get(".")
+	cfg, err := config.Get()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -44,6 +45,15 @@ func main() {
 		}
 	}(zapLogger)
 
+	// Create roomKey folder if bot exist
+	_, err = os.Stat("keys")
+	if os.IsNotExist(err) {
+		err = os.Mkdir("keys", 0755)
+		if err != nil {
+			zapLogger.Fatalf("failed to create roomKeys folder %v", err)
+		}
+	}
+
 	// Connect to database
 	db, ctx, cancel, err := mongodb.NewConnection(cfg)
 	if err != nil {
@@ -59,30 +69,17 @@ func main() {
 	zapLogger.Info("DB connected successfully")
 
 	// Redis
-	redisAuthClient, err := redis.NewClient(cfg.RedisHost, cfg.RedisPortAuth)
+	redisAuthClient, err := redis.NewClient(cfg.RedisHostAuth, cfg.RedisPortAuth)
 	if err != nil {
 		zapLogger.Fatalf("failed to connect to auth redis: %v", err)
 	}
 	zapLogger.Info("Redis(auth) connected successfully")
 
-	redisChatClient, err := redis.NewClient(cfg.RedisHost, cfg.RedisPortChat)
+	redisChatClient, err := redis.NewClient(cfg.RedisHostChat, cfg.RedisPortChat)
 	if err != nil {
 		zapLogger.Fatalf("failed to connect to chat redis: %v", err)
 	}
 	zapLogger.Info("Redis(chat) connected successfully")
-
-	// RabbitMq
-	//rabbitmqConnection, err := rabbitmq.NewConnection(cfg.RabbitMqUrl)
-	//if err != nil {
-	//	zapLogger.Fatalf("can't connect to amqp host: %v", err)
-	//}
-	//
-	//rabbitmqChannel, err := rabbitmq.NewChanel(rabbitmqConnection)
-	//if err != nil {
-	//	zapLogger.Fatalf("can't create amqp channel: %v", err)
-	//}
-	//defer rabbitmq.Close(rabbitmqConnection, rabbitmqChannel)
-	//zapLogger.Info("RabbitMq connected successfully")
 
 	// Repositories
 	userRepository, err := user.NewRepository(db, cfg.MongoDbName, zapLogger)
@@ -90,8 +87,13 @@ func main() {
 		zapLogger.Fatalf("failde to create user repository: %v", err)
 	}
 
+	roomRepository, err := room.NewRepository(db, cfg.MongoDbName, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up room repository %v", err)
+	}
+
 	// Services
-	jwtSvc, err := jwt.NewJwtService(
+	jwtService, err := jwt.NewJwtService(
 		cfg.JwtSecretAccess,
 		&cfg.JwtExpiryAccess,
 		cfg.JwtSecretRefresh,
@@ -107,20 +109,35 @@ func main() {
 		zapLogger.Fatalf("failde to create user service: %v", err)
 	}
 
-	userAuthService, err := auth.NewService(userService, zapLogger, jwtSvc)
+	userAuthService, err := auth.NewService(userService, zapLogger, jwtService)
 	if err != nil {
 		zapLogger.Fatalf("failde to create user service: %v", err)
 	}
 
-	chatService, err := old_chat.NewService(zapLogger, redisChatClient, make(map[*old_chat.Client]bool), make(map[*old_chat.Room]bool), jwtSvc)
+	roomService, err := room.NewService(roomRepository, userService, zapLogger)
 	if err != nil {
-		zapLogger.Fatalf("failde to create chat service: %v", err)
+		zapLogger.Fatalf("failed to set up room service %v", err)
+	}
+
+	chatService, err := chat.NewService(redisChatClient, roomService, jwtService, userService, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up chat service %v", err)
 	}
 
 	//Middleware
-	supportMiddleware, err := user.NewMiddleware(jwtSvc, userService, zapLogger)
+	supportMiddleware, err := user.NewMiddleware(jwtService, userService, zapLogger)
 	if err != nil {
 		zapLogger.Fatalf("failed to set up user middleware %v", err)
+	}
+
+	chatMiddleware, err := chat.NewMiddleware(jwtService, userService, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up chat middleware %v", err)
+	}
+
+	roomMiddleware, err := room.NewMiddleware(jwtService, userService, zapLogger)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up room middleware %v", err)
 	}
 
 	// Set-up Route
@@ -148,28 +165,40 @@ func main() {
 		zapLogger.Fatalf("failde to create user auth handler: %v", err)
 	}
 
-	chatHandler, err := old_chat.NewHandler(chatService)
+	chatHandler, err := chat.NewHandler(chatService)
 	if err != nil {
-		zapLogger.Fatalf("failde to create chat handler: %v", err)
+		zapLogger.Fatalf("failed to set up chat handler %v", err)
 	}
 
+	roomHandler, err := room.NewHandler(roomService)
+	if err != nil {
+		zapLogger.Fatalf("failed to set up room handler %v", err)
+	}
+
+	// Routes
 	router.Route("/api/v1/auth", func(r chi.Router) {
 		userAuthHandler.SetupRoutes(r)
 	})
 
 	router.Route("/api/v1", func(r chi.Router) {
 		supportRoute := r.With(supportMiddleware.JwtMiddleware)
+		roomRoute := r.With(roomMiddleware.JwtMiddleware)
 
 		healthHandler.SetupRoutes(r)
 		userHandler.SetupRoutes(supportRoute)
-		chatHandler.SetupRoutes(r)
+		roomHandler.SetupRoutes(roomRoute)
+		//chatHandler.SetupRoutes(r)
+	})
+
+	router.Route("/", func(r chi.Router) {
+		chatRoute := r.With(chatMiddleware.JwtMiddleware)
+		chatHandler.SetupRoutes(chatRoute)
 	})
 
 	// Start App
 	zapLogger.Infof("Starting HTTP server on port: %v", cfg.PORT)
-	err = http.ListenAndServe(cfg.PORT, router)
+	err = http.ListenAndServe(":"+cfg.PORT, router)
 	if err != nil {
-		fmt.Println(err)
 		zapLogger.Fatalf("Failed to start HTTP server: %v", err)
 		return
 	}

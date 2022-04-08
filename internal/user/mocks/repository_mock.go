@@ -50,6 +50,21 @@ func (mr *MockRepositoryMockRecorder) CreateUser(ctx, user interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockRepository)(nil).CreateUser), ctx, user)
 }
 
+// GetFreeUser mocks base method.
+func (m *MockRepository) GetFreeUser(ctx context.Context) (*user.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFreeUser", ctx)
+	ret0, _ := ret[0].(*user.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFreeUser indicates an expected call of GetFreeUser.
+func (mr *MockRepositoryMockRecorder) GetFreeUser(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFreeUser", reflect.TypeOf((*MockRepository)(nil).GetFreeUser), ctx)
+}
+
 // GetUserByEmail mocks base method.
 func (m *MockRepository) GetUserByEmail(ctx context.Context, id string) (*user.User, error) {
 	m.ctrl.T.Helper()
@@ -78,4 +93,18 @@ func (m *MockRepository) GetUserById(ctx context.Context, id string) (*user.User
 func (mr *MockRepositoryMockRecorder) GetUserById(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockRepository)(nil).GetUserById), ctx, id)
+}
+
+// UpdateUser mocks base method.
+func (m *MockRepository) UpdateUser(ctx context.Context, user *user.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockRepositoryMockRecorder) UpdateUser(ctx, user interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockRepository)(nil).UpdateUser), ctx, user)
 }

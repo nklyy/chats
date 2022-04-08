@@ -18,6 +18,8 @@ const (
 	StatusFailedCreateUser          errors.Status = "failed_create_user"
 	StatusFailedSaveUser            errors.Status = "failed_save_user"
 	StatusFailedUpdateUser          errors.Status = "failed_update_user"
+	StatusFailedFindFreeUsers       errors.Status = "failed_find_free_users"
+	StatusNoUsersYet                errors.Status = "no_users_yet"
 )
 
 var (
@@ -33,4 +35,6 @@ var (
 	ErrFailedCreateUser          = errors.New(codes.BadRequest, StatusFailedCreateUser)
 	ErrFailedSaveUser            = errors.New(codes.BadRequest, StatusFailedSaveUser)
 	ErrFailedUpdateUser          = errors.New(codes.BadRequest, StatusFailedUpdateUser)
+	ErrFailedFindFreeUsers       = errors.New(codes.BadRequest, StatusFailedFindFreeUsers)
+	ErrNoUsersYet                = errors.New(codes.BadRequest, StatusNoUsersYet)
 )

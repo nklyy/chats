@@ -1,11 +1,13 @@
-package support
+package room
 
 import (
+	"context"
 	gerrors "errors"
 	"go.uber.org/zap"
 	"net/http"
-	"noname-realtime-support-chat/internal/support/jwt"
+	"noname-realtime-support-chat/internal/user"
 	"noname-realtime-support-chat/pkg/errors"
+	"noname-realtime-support-chat/pkg/jwt"
 	"noname-realtime-support-chat/pkg/respond"
 	"strings"
 )
@@ -16,19 +18,23 @@ type Middleware interface {
 }
 
 type middleware struct {
-	jwtSvc jwt.Service
-	logger *zap.SugaredLogger
+	jwtSvc  jwt.Service
+	userSvc user.Service
+	logger  *zap.SugaredLogger
 }
 
-func NewMiddleware(jwtSvc jwt.Service, logger *zap.SugaredLogger) (Middleware, error) {
+func NewMiddleware(jwtSvc jwt.Service, userSvc user.Service, logger *zap.SugaredLogger) (Middleware, error) {
 	if jwtSvc == nil {
 		return nil, gerrors.New("invalid jwt service")
+	}
+	if userSvc == nil {
+		return nil, gerrors.New("invalid user service")
 	}
 	if logger == nil {
 		return nil, gerrors.New("invalid logger")
 	}
 
-	return &middleware{jwtSvc: jwtSvc, logger: logger}, nil
+	return &middleware{jwtSvc: jwtSvc, userSvc: userSvc, logger: logger}, nil
 }
 
 func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
@@ -63,9 +69,10 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if payload.Role != "support" {
-			m.logger.Error("token doesn't have permission")
-			respond.Respond(w, errors.HTTPCode(ErrTokenDoesntHavePermission), ErrTokenDoesntHavePermission)
+		u, err := m.userSvc.GetUserById(r.Context(), payload.Id, true)
+		if err != nil {
+			m.logger.Errorf("failed to extend expire token: %v", err)
+			respond.Respond(w, errors.HTTPCode(err), err)
 			return
 		}
 
@@ -75,7 +82,7 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 			respond.Respond(w, errors.HTTPCode(err), err)
 			return
 		}
-
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "user", *u)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -90,3 +90,12 @@ type RefreshDTO struct {
 type LogoutDTO struct {
 	Token string `json:"token" validate:"required"`
 }
+type CheckDTO struct {
+	Token string `json:"token" validate:"required"`
+}
+
+type CheckResponseDTO struct {
+	UserId string `json:"user_id"`
+	Role   string `json:"role"`
+	IsRoom bool   `json:"is_room"`
+}

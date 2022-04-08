@@ -1,5 +1,14 @@
 package chat
 
-const ()
+import (
+	"noname-realtime-support-chat/pkg/codes"
+	"noname-realtime-support-chat/pkg/errors"
+)
 
-var ()
+const (
+	StatusRequiredToken errors.Status = "token_required"
+)
+
+var (
+	ErrRequiredToken = errors.New(codes.Unauthorized, StatusRequiredToken)
+)

@@ -22,12 +22,23 @@ func NewHandler(userSvc Service) (*Handler, error) {
 
 func (h *Handler) SetupRoutes(router chi.Router) {
 	router.Get("/user/{id}", h.GetUserById)
+	router.Get("/free-user", h.GetFreeUser)
 }
 
 func (h *Handler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	user, err := h.userSvc.GetUserById(r.Context(), id, false)
+	if err != nil {
+		respond.Respond(w, errors.HTTPCode(err), err)
+		return
+	}
+
+	respond.Respond(w, http.StatusOK, user)
+}
+
+func (h *Handler) GetFreeUser(w http.ResponseWriter, r *http.Request) {
+	user, err := h.userSvc.GetFreeUser(r.Context())
 	if err != nil {
 		respond.Respond(w, errors.HTTPCode(err), err)
 		return

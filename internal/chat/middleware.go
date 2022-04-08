@@ -1,14 +1,14 @@
-package user
+package chat
 
 import (
 	"context"
 	gerrors "errors"
 	"go.uber.org/zap"
 	"net/http"
+	"noname-realtime-support-chat/internal/user"
 	"noname-realtime-support-chat/pkg/errors"
 	"noname-realtime-support-chat/pkg/jwt"
 	"noname-realtime-support-chat/pkg/respond"
-	"strings"
 )
 
 //go:generate mockgen -source=middleware.go -destination=mocks/middleware_mock.go
@@ -18,11 +18,11 @@ type Middleware interface {
 
 type middleware struct {
 	jwtSvc  jwt.Service
-	userSvc Service
+	userSvc user.Service
 	logger  *zap.SugaredLogger
 }
 
-func NewMiddleware(jwtSvc jwt.Service, userSvc Service, logger *zap.SugaredLogger) (Middleware, error) {
+func NewMiddleware(jwtSvc jwt.Service, userSvc user.Service, logger *zap.SugaredLogger) (Middleware, error) {
 	if jwtSvc == nil {
 		return nil, gerrors.New("invalid jwt service")
 	}
@@ -38,23 +38,15 @@ func NewMiddleware(jwtSvc jwt.Service, userSvc Service, logger *zap.SugaredLogge
 
 func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authorization := r.Header.Get("Authorization")
+		token := r.URL.Query().Get("token")
 
-		if len(authorization) == 0 {
+		if len(token) == 0 {
 			m.logger.Error("failed to get auth token")
 			respond.Respond(w, errors.HTTPCode(ErrRequiredToken), ErrRequiredToken)
 			return
 		}
 
-		authorizationParts := strings.Split(authorization, " ")
-
-		if len(authorizationParts) != 2 || len(authorizationParts[1]) == 0 || authorizationParts[0] != "Bearer" {
-			m.logger.Error("invalid auth token")
-			respond.Respond(w, errors.HTTPCode(ErrToken), ErrToken)
-			return
-		}
-
-		payload, err := m.jwtSvc.ParseToken(authorizationParts[1], true)
+		payload, err := m.jwtSvc.ParseToken(token, true)
 		if err != nil {
 			m.logger.Errorf("failed to parse auth token: %v", err)
 			respond.Respond(w, errors.HTTPCode(err), err)
@@ -70,14 +62,8 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 
 		u, err := m.userSvc.GetUserById(r.Context(), payload.Id, true)
 		if err != nil {
-			m.logger.Errorf("failed to extend expire token: %v", err)
+			m.logger.Errorf("failed to get user: %v", err)
 			respond.Respond(w, errors.HTTPCode(err), err)
-			return
-		}
-
-		if !u.Support && payload.Role == "user" {
-			m.logger.Error("token doesn't have permission")
-			respond.Respond(w, errors.HTTPCode(ErrTokenDoesntHavePermission), ErrTokenDoesntHavePermission)
 			return
 		}
 
@@ -87,6 +73,7 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 			respond.Respond(w, errors.HTTPCode(err), err)
 			return
 		}
+
 		ctx := context.WithValue(r.Context(), "user", *u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
