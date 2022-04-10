@@ -116,7 +116,7 @@ func (s *service) registerClientAndCreateRoom(ctx context.Context, client *room.
 			if err != nil {
 				msg, _ := s.encodeMessage(room.MessageResponse{
 					Action:  "",
-					Message: "",
+					Message: nil,
 					From:    "",
 					Error:   "failed update user",
 				})
@@ -208,7 +208,7 @@ func (s *service) messageHandler(jsonMessage []byte) {
 						Action: message.Action,
 						Message: room.MessageResponse{
 							Action:  "",
-							Message: "",
+							Message: nil,
 							From:    "",
 							Error:   "failed update room",
 						},
@@ -220,7 +220,7 @@ func (s *service) messageHandler(jsonMessage []byte) {
 					Action: message.Action,
 					Message: room.MessageResponse{
 						Action:  message.Action,
-						Message: message.Message,
+						Message: &message.Message,
 						From:    dbUser.ID,
 						Error:   nil,
 					},
@@ -243,7 +243,7 @@ func (s *service) messageHandler(jsonMessage []byte) {
 					if err != nil {
 						msg, _ := s.encodeMessage(room.MessageResponse{
 							Action:  "",
-							Message: "",
+							Message: nil,
 							From:    "",
 							Error:   "failed update user",
 						})
