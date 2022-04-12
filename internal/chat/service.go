@@ -83,43 +83,36 @@ func (s *service) registerClientAndCreateRoom(ctx context.Context, client *room.
 			r := s.findRoom(ctx, *u.RoomName)
 
 			if r == nil {
-				newRoomId, _ := uuid.NewUUID()
-				r, _ := s.roomSvc.CreateRoom(ctx, newRoomId.String(), u)
-				client.Room = r
-				r.Clients[client] = true
-				go r.RunRoom(s.redisClient)
-				s.rooms[r] = true
+				s.createRoomIfDoesntExist(ctx, client, u)
 			} else {
 				client.Room = r
 				r.Clients[client] = true
 			}
 		} else {
-			newRoomId, _ := uuid.NewUUID()
-			r, _ := s.roomSvc.CreateRoom(ctx, newRoomId.String(), u)
-			client.Room = r
-			r.Clients[client] = true
-			go r.RunRoom(s.redisClient)
-			s.rooms[r] = true
+			s.createRoomIfDoesntExist(ctx, client, u)
 		}
 	}
 
 	if u.Support && u.RoomName != nil {
 		r := s.findRoom(ctx, *u.RoomName)
 		if r == nil {
-			client.Send <- []byte("Room doesn't exist!")
-			uEntity, _ := user.MapToEntity(u)
 			var emptyRoom string
+
+			uEntity, _ := user.MapToEntity(u)
 			uEntity.SetRoom(&emptyRoom)
 
-			//////////
 			err := s.userSvc.UpdateUser(ctx, user.MapToDTO(uEntity))
 			if err != nil {
-				msg, _ := s.encodeMessage(room.MessageResponse{
+				msg, err := s.encodeMessage(room.MessageResponse{
 					Action:  "",
 					Message: nil,
 					From:    "",
 					Error:   "failed update user",
 				})
+				if err != nil {
+					s.logger.Errorf("failed to encode message %v", err)
+				}
+
 				client.Send <- msg
 				return
 			}
@@ -159,6 +152,23 @@ func (s *service) runRoomFromRepository(ctx context.Context, roomName string) *r
 	return r
 }
 
+func (s *service) createRoomIfDoesntExist(ctx context.Context, client *room.Client, u *user.DTO) {
+	newRoomId, err := uuid.NewUUID()
+	if err != nil {
+		s.logger.Errorf("failed create uuid %cv", err)
+	}
+
+	newRoom, err := s.roomSvc.CreateRoom(ctx, newRoomId.String(), u)
+	if err != nil {
+		s.logger.Errorf("failed create room %v", err)
+	}
+
+	client.Room = newRoom
+	newRoom.Clients[client] = true
+	go newRoom.RunRoom(s.redisClient)
+	s.rooms[newRoom] = true
+}
+
 func (s *service) encodeMessage(msg room.MessageResponse) ([]byte, error) {
 	encMsg, err := json.Marshal(msg)
 	if err != nil {
@@ -177,9 +187,20 @@ func (s *service) messageHandler(jsonMessage []byte) {
 
 	switch message.Action {
 	case "publish-room":
-		uPayload, _ := s.jwtSvc.ParseToken(message.Token, true)
-		dbUser, _ := s.userSvc.GetUserById(context.Background(), uPayload.Id, false)
-		dbRoom, _ := s.roomSvc.GetRoomByName(context.Background(), *dbUser.RoomName)
+		uPayload, err := s.jwtSvc.ParseToken(message.Token, true)
+		if err != nil {
+			s.logger.Errorf("failed to parse token %v", err)
+		}
+
+		dbUser, err := s.userSvc.GetUserById(context.Background(), uPayload.Id, false)
+		if err != nil {
+			s.logger.Errorf("failed to get user %v", err)
+		}
+
+		dbRoom, err := s.roomSvc.GetRoomByName(context.Background(), *dbUser.RoomName)
+		if err != nil {
+			s.logger.Errorf("failed to get room %v", err)
+		}
 
 		for r := range s.rooms {
 			if r.Name == *dbUser.RoomName {
@@ -229,17 +250,28 @@ func (s *service) messageHandler(jsonMessage []byte) {
 			}
 		}
 	case "disconnect":
-		uPayload, _ := s.jwtSvc.ParseToken(message.Token, true)
-		dbUser, _ := s.userSvc.GetUserById(context.Background(), uPayload.Id, false)
+		uPayload, err := s.jwtSvc.ParseToken(message.Token, true)
+		if err != nil {
+			s.logger.Errorf("failed to parse token %v", err)
+		}
+
+		dbUser, err := s.userSvc.GetUserById(context.Background(), uPayload.Id, false)
+		if err != nil {
+			s.logger.Errorf("failed to get user %v", err)
+		}
 
 		for r := range s.rooms {
 			if r.Name == *dbUser.RoomName {
 				for client := range r.Clients {
-					rUser, _ := s.userSvc.GetUserById(context.Background(), client.Id, true)
+					rUser, err := s.userSvc.GetUserById(context.Background(), client.Id, true)
+					if err != nil {
+						s.logger.Errorf("failed to get user %v", err)
+					}
+
 					userEntity, _ := user.MapToEntity(rUser)
 					userEntity.SetRoom(nil)
 					userEntity.SetFreeStatus(true)
-					err := s.userSvc.UpdateUser(context.Background(), user.MapToDTO(userEntity))
+					err = s.userSvc.UpdateUser(context.Background(), user.MapToDTO(userEntity))
 					if err != nil {
 						msg, _ := s.encodeMessage(room.MessageResponse{
 							Action:  "",
@@ -252,7 +284,10 @@ func (s *service) messageHandler(jsonMessage []byte) {
 					}
 
 					close(client.Send)
-					client.Connection.Close()
+					err = client.Connection.Close()
+					if err != nil {
+						s.logger.Errorf("failed close connection %v", err)
+					}
 
 					for serverClient := range s.clients {
 						if serverClient.Id == client.Id {
@@ -261,7 +296,10 @@ func (s *service) messageHandler(jsonMessage []byte) {
 					}
 				}
 
-				s.roomSvc.DeleteRoom(context.Background(), r.Name)
+				err := s.roomSvc.DeleteRoom(context.Background(), r.Name)
+				if err != nil {
+					s.logger.Errorf("failed ddelete room %v", err)
+				}
 				delete(s.rooms, r)
 				break
 			}
