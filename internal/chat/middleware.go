@@ -36,6 +36,8 @@ func NewMiddleware(jwtSvc jwt.Service, userSvc user.Service, logger *zap.Sugared
 	return &middleware{jwtSvc: jwtSvc, userSvc: userSvc, logger: logger}, nil
 }
 
+type contextKey string
+
 func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.URL.Query().Get("token")
@@ -74,7 +76,7 @@ func (m *middleware) JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user", *u)
+		ctx := context.WithValue(r.Context(), contextKey("user"), *u)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
