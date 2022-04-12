@@ -49,8 +49,18 @@ type HandlerFunc func([]byte)
 
 func (c *Client) ReadPump(msgHandleFunc HandlerFunc) {
 	c.Connection.SetReadLimit(maxMessageSize)
-	c.Connection.SetReadDeadline(time.Now().Add(pongWait))
-	c.Connection.SetPongHandler(func(string) error { c.Connection.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	err := c.Connection.SetReadDeadline(time.Now().Add(pongWait))
+	if err != nil {
+		log.Printf("failed to set read deadline %v", err)
+	}
+	c.Connection.SetPongHandler(func(string) error {
+		err := c.Connection.SetReadDeadline(time.Now().Add(pongWait))
+		if err != nil {
+			log.Printf("failed to set read deadline %v", err)
+			return err
+		}
+		return nil
+	})
 
 	// Start endless read loop, waiting for messages from client
 	for {
@@ -70,15 +80,24 @@ func (c *Client) WritePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.Connection.Close()
+		err := c.Connection.Close()
+		if err != nil {
+			log.Printf("failed to close connection %v", err)
+		}
 	}()
 	for {
 		select {
 		case message, ok := <-c.Send:
-			c.Connection.SetWriteDeadline(time.Now().Add(writeWait))
+			err := c.Connection.SetWriteDeadline(time.Now().Add(writeWait))
+			if err != nil {
+				log.Printf("failed to set write deadline %v", err)
+			}
 			if !ok {
 				// The WsServer closed the channel.
-				c.Connection.WriteMessage(websocket.CloseMessage, []byte{})
+				err := c.Connection.WriteMessage(websocket.CloseMessage, []byte{})
+				if err != nil {
+					log.Printf("failed to write message %v", err)
+				}
 				return
 			}
 
@@ -94,15 +113,24 @@ func (c *Client) WritePump() {
 			//Attach queued chat messages to the current websocket message.
 			n := len(c.Send)
 			for i := 0; i < n; i++ {
-				w.Write([]byte{'\n'})
-				w.Write(<-c.Send)
+				_, err := w.Write([]byte{'\n'})
+				if err != nil {
+					log.Printf("failed to write message %v", err)
+				}
+				_, err = w.Write(<-c.Send)
+				if err != nil {
+					log.Printf("failed to write message %v", err)
+				}
 			}
 
 			if err := w.Close(); err != nil {
 				return
 			}
 		case <-ticker.C:
-			c.Connection.SetWriteDeadline(time.Now().Add(writeWait))
+			err := c.Connection.SetWriteDeadline(time.Now().Add(writeWait))
+			if err != nil {
+				log.Printf("failed to set write deadline %v", err)
+			}
 			if err := c.Connection.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
