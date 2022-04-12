@@ -19,9 +19,10 @@ func TestInit(t *testing.T) {
 		jwtSecretRefresh string
 		jwtExpiryRefresh string
 		autoLogout       string
-		redisHost        string
-		redisPort        string
-		rabbitMqUrl      string
+		redisHostAuth    string
+		redisPortAuth    string
+		redisHostChat    string
+		redisPortChat    string
 	}
 
 	type args struct {
@@ -30,7 +31,7 @@ func TestInit(t *testing.T) {
 
 	setEnv := func(env env) {
 		os.Setenv("PORT", env.port)
-		os.Setenv("ENVIRONMENT", env.environment)
+		os.Setenv("APP_ENV", env.environment)
 		os.Setenv("MONGO_DB_NAME", env.mongoDbName)
 		os.Setenv("MONGO_DB_URL", env.mongoDbUrl)
 		os.Setenv("SALT", env.salt)
@@ -39,9 +40,10 @@ func TestInit(t *testing.T) {
 		os.Setenv("JWT_SECRET_REFRESH", env.jwtSecretRefresh)
 		os.Setenv("JWT_EXPIRY_REFRESH", env.jwtExpiryRefresh)
 		os.Setenv("AUTO_LOGOUT", env.autoLogout)
-		os.Setenv("REDIS_HOST", env.redisHost)
-		os.Setenv("REDIS_PORT", env.redisPort)
-		os.Setenv("AMQP_SERVER_URL", env.rabbitMqUrl)
+		os.Setenv("REDIS_HOST_AUTH", env.redisHostAuth)
+		os.Setenv("REDIS_PORT_AUTH", env.redisPortAuth)
+		os.Setenv("REDIS_HOST_CHAT", env.redisHostChat)
+		os.Setenv("REDIS_PORT_CHAT", env.redisPortChat)
 	}
 
 	tests := []struct {
@@ -54,7 +56,7 @@ func TestInit(t *testing.T) {
 			name: "Test config file!",
 			args: args{
 				env: env{
-					port:             ":5000",
+					port:             "5000",
 					environment:      "development",
 					mongoDbName:      "example",
 					mongoDbUrl:       "http://127.0.0.1",
@@ -64,25 +66,33 @@ func TestInit(t *testing.T) {
 					jwtSecretRefresh: "asd",
 					jwtExpiryRefresh: "300",
 					autoLogout:       "3",
-					redisHost:        "localhost",
-					redisPort:        "1234",
-					rabbitMqUrl:      "amqp://guest:guest@message-broker:5672",
+					redisHostAuth:    "localhost",
+					redisPortAuth:    "1234",
+					redisHostChat:    "localhost",
+					redisPortChat:    "4321",
 				},
 			},
 			want: &config.Config{
-				PORT:             ":5000",
-				Environment:      "development",
-				MongoDbName:      "example",
-				MongoDbUrl:       "http://127.0.0.1",
-				Salt:             11,
-				JwtSecretAccess:  "jwt",
-				JwtExpiryAccess:  100,
-				JwtSecretRefresh: "asd",
-				JwtExpiryRefresh: 300,
-				AutoLogout:       3,
-				RedisHost:        "localhost",
-				RedisPort:        "1234",
-				RabbitMqUrl:      "amqp://guest:guest@message-broker:5672",
+				PORT:        "5000",
+				Environment: "development",
+				Salt:        11,
+				MongoDb: config.MongoDb{
+					MongoDbName: "example",
+					MongoDbUrl:  "http://127.0.0.1",
+				},
+				Jwt: config.Jwt{
+					JwtSecretAccess:  "jwt",
+					JwtExpiryAccess:  100,
+					JwtSecretRefresh: "asd",
+					JwtExpiryRefresh: 300,
+					AutoLogout:       3,
+				},
+				Redis: config.Redis{
+					RedisHostAuth: "localhost",
+					RedisPortAuth: "1234",
+					RedisHostChat: "localhost",
+					RedisPortChat: "4321",
+				},
 			},
 		},
 	}
@@ -91,7 +101,7 @@ func TestInit(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			setEnv(test.args.env)
 
-			got, err := config.Get("..")
+			got, err := config.Get()
 			if (err != nil) != test.wantError {
 				t.Errorf("Init() error = %v, wantErr %v", err, test.wantError)
 
