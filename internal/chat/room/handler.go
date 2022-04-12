@@ -2,7 +2,6 @@ package room
 
 import (
 	gerrors "errors"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"noname-realtime-support-chat/internal/user"
@@ -34,7 +33,6 @@ func (h *Handler) GetRoomMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u := userCtxValue.(user.DTO)
-	fmt.Println(u.ID, "USER ID")
 	room, err := h.roomSvc.GetRoomWithFormatMessages(r.Context(), *u.RoomName, u.ID)
 	if err != nil {
 		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))

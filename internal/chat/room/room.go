@@ -33,11 +33,18 @@ func (r *Room) RunRoom(redis *redis.Client) {
 	go r.subscribeToRoomMessages(redis)
 
 	for {
-		select {
-		case message := <-r.Broadcast:
+		//select {
+		//case message := <-r.Broadcast:
+		//	j, err := json.Marshal(message.Message)
+		//	if err != nil {
+		//		log.Println(err)
+		//	}
+		//	r.publishRoomMessage(redis, j, message.RoomName)
+		//}
+		for message := range r.Broadcast {
 			j, err := json.Marshal(message.Message)
 			if err != nil {
-				log.Println(err)
+				log.Printf("failed decode broadcast message %v", err)
 			}
 			r.publishRoomMessage(redis, j, message.RoomName)
 		}
