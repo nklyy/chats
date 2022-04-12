@@ -90,7 +90,7 @@ func (s *service) CreateRoom(ctx context.Context, roomName string, u *user.DTO) 
 
 	_, err = s.repository.CreateRoom(ctx, m)
 	if err != nil {
-		s.logger.Errorf("failed to save user %v", err)
+		s.logger.Errorf("failed to create room %v", err)
 		return nil, err
 	}
 
@@ -101,6 +101,10 @@ func (s *service) CreateRoom(ctx context.Context, roomName string, u *user.DTO) 
 	userDto := user.MapToDTO(userEntity)
 
 	err = s.userSvc.UpdateUser(ctx, userDto)
+	if err != nil {
+		s.logger.Errorf("failed to update user %v", err)
+		return nil, err
+	}
 
 	return room, nil
 }

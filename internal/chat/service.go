@@ -58,7 +58,7 @@ func NewService(redisClient *redis.Client, roomSvc room.Service, jwtSvc jwt.Serv
 }
 
 func (s *service) Chat(ctx context.Context, ws *websocket.Conn) error {
-	userCtxValue := ctx.Value("user")
+	userCtxValue := ctx.Value(contextKey("user"))
 	if userCtxValue == nil {
 		log.Println("Not authenticated")
 		return nil
@@ -161,6 +161,18 @@ func (s *service) createRoomIfDoesntExist(ctx context.Context, client *room.Clie
 	newRoom, err := s.roomSvc.CreateRoom(ctx, newRoomId.String(), u)
 	if err != nil {
 		s.logger.Errorf("failed create room %v", err)
+		msg, err := s.encodeMessage(room.MessageResponse{
+			Action:  "",
+			Message: nil,
+			From:    "",
+			Error:   "failed create room",
+		})
+		if err != nil {
+			s.logger.Errorf("failed to create room %v", err)
+		}
+
+		client.Send <- msg
+		return
 	}
 
 	client.Room = newRoom

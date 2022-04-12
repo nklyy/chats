@@ -70,7 +70,7 @@ func (s *service) GetFreeUser(ctx context.Context) (*DTO, error) {
 		return nil, err
 	}
 
-	userCtxValue := ctx.Value("user")
+	userCtxValue := ctx.Value(contextKey("user"))
 	if userCtxValue == nil {
 		s.logger.Error("Not authenticated")
 		return nil, errors.New("not authenticated")

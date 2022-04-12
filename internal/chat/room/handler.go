@@ -2,6 +2,7 @@ package room
 
 import (
 	gerrors "errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"noname-realtime-support-chat/internal/user"
@@ -26,13 +27,14 @@ func (h *Handler) SetupRoutes(router chi.Router) {
 }
 
 func (h *Handler) GetRoomMessages(w http.ResponseWriter, r *http.Request) {
-	userCtxValue := r.Context().Value("user")
+	userCtxValue := r.Context().Value(contextKey("user"))
 	if userCtxValue == nil {
 		respond.Respond(w, http.StatusUnauthorized, errors.NewInternal("Not authenticated"))
 		return
 	}
 
 	u := userCtxValue.(user.DTO)
+	fmt.Println(u.ID, "USER ID")
 	room, err := h.roomSvc.GetRoomWithFormatMessages(r.Context(), *u.RoomName, u.ID)
 	if err != nil {
 		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))
