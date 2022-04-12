@@ -1,4 +1,4 @@
-.SILENT: deps lint clean gen-mock test build run
+.SILENT: deps lint clean gen-mock test build run run-docker
 
 CYAN=\033[0;36m
 RESET=\033[0m
@@ -44,4 +44,9 @@ build: clean deps
 run:
 	$(call pprint, Running app...)
 	go run ./cmd/main.go
+	$(call completed)
+
+run-docker:
+	$(call pprint, Running app...)
+	docker-compose up -d --build
 	$(call completed)
