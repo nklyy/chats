@@ -37,8 +37,8 @@ func NewService(repository Repository, logger *zap.SugaredLogger, salt string) (
 	return &service{repository: repository, logger: logger, salt: salt}, nil
 }
 
-func (s *service) GetUserByIp(ctx context.Context, hashIp string) (*DTO, error) {
-	user, err := s.repository.GetUser(ctx, bson.M{"ip_address": hashIp})
+func (s *service) GetUserByIp(ctx context.Context, hashedIp string) (*DTO, error) {
+	user, err := s.repository.GetUser(ctx, bson.M{"ip_address": hashedIp})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
