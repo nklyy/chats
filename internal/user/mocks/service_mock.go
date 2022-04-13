@@ -36,18 +36,18 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m *MockService) CreateUser(ctx context.Context, email, name, password string) (*user.DTO, error) {
+func (m *MockService) CreateUser(ctx context.Context, ip string) (*user.DTO, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", ctx, email, name, password)
+	ret := m.ctrl.Call(m, "CreateUser", ctx, ip)
 	ret0, _ := ret[0].(*user.DTO)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateUser indicates an expected call of CreateUser.
-func (mr *MockServiceMockRecorder) CreateUser(ctx, email, name, password interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) CreateUser(ctx, ip interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockService)(nil).CreateUser), ctx, email, name, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockService)(nil).CreateUser), ctx, ip)
 }
 
 // GetFreeUser mocks base method.
@@ -65,34 +65,19 @@ func (mr *MockServiceMockRecorder) GetFreeUser(ctx interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFreeUser", reflect.TypeOf((*MockService)(nil).GetFreeUser), ctx)
 }
 
-// GetUserByEmail mocks base method.
-func (m *MockService) GetUserByEmail(ctx context.Context, email string, withPassword bool) (*user.DTO, error) {
+// GetUserByIp mocks base method.
+func (m *MockService) GetUserByIp(ctx context.Context, hashIp string) (*user.DTO, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email, withPassword)
+	ret := m.ctrl.Call(m, "GetUserByIp", ctx, hashIp)
 	ret0, _ := ret[0].(*user.DTO)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserByEmail indicates an expected call of GetUserByEmail.
-func (mr *MockServiceMockRecorder) GetUserByEmail(ctx, email, withPassword interface{}) *gomock.Call {
+// GetUserByIp indicates an expected call of GetUserByIp.
+func (mr *MockServiceMockRecorder) GetUserByIp(ctx, hashIp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockService)(nil).GetUserByEmail), ctx, email, withPassword)
-}
-
-// GetUserById mocks base method.
-func (m *MockService) GetUserById(ctx context.Context, id string, withPassword bool) (*user.DTO, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserById", ctx, id, withPassword)
-	ret0, _ := ret[0].(*user.DTO)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserById indicates an expected call of GetUserById.
-func (mr *MockServiceMockRecorder) GetUserById(ctx, id, withPassword interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockService)(nil).GetUserById), ctx, id, withPassword)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByIp", reflect.TypeOf((*MockService)(nil).GetUserByIp), ctx, hashIp)
 }
 
 // UpdateUser mocks base method.

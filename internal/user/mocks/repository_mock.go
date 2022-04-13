@@ -10,6 +10,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	bson "go.mongodb.org/mongo-driver/bson"
 )
 
 // MockRepository is a mock of Repository interface.
@@ -50,49 +51,34 @@ func (mr *MockRepositoryMockRecorder) CreateUser(ctx, user interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockRepository)(nil).CreateUser), ctx, user)
 }
 
-// GetFreeUser mocks base method.
-func (m *MockRepository) GetFreeUser(ctx context.Context) (*user.User, error) {
+// GetUser mocks base method.
+func (m *MockRepository) GetUser(ctx context.Context, filters bson.M) (*user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFreeUser", ctx)
+	ret := m.ctrl.Call(m, "GetUser", ctx, filters)
 	ret0, _ := ret[0].(*user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetFreeUser indicates an expected call of GetFreeUser.
-func (mr *MockRepositoryMockRecorder) GetFreeUser(ctx interface{}) *gomock.Call {
+// GetUser indicates an expected call of GetUser.
+func (mr *MockRepositoryMockRecorder) GetUser(ctx, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFreeUser", reflect.TypeOf((*MockRepository)(nil).GetFreeUser), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockRepository)(nil).GetUser), ctx, filters)
 }
 
-// GetUserByEmail mocks base method.
-func (m *MockRepository) GetUserByEmail(ctx context.Context, id string) (*user.User, error) {
+// GetUsers mocks base method.
+func (m *MockRepository) GetUsers(ctx context.Context, filters bson.M) ([]*user.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, id)
-	ret0, _ := ret[0].(*user.User)
+	ret := m.ctrl.Call(m, "GetUsers", ctx, filters)
+	ret0, _ := ret[0].([]*user.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserByEmail indicates an expected call of GetUserByEmail.
-func (mr *MockRepositoryMockRecorder) GetUserByEmail(ctx, id interface{}) *gomock.Call {
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockRepositoryMockRecorder) GetUsers(ctx, filters interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockRepository)(nil).GetUserByEmail), ctx, id)
-}
-
-// GetUserById mocks base method.
-func (m *MockRepository) GetUserById(ctx context.Context, id string) (*user.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserById", ctx, id)
-	ret0, _ := ret[0].(*user.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserById indicates an expected call of GetUserById.
-func (mr *MockRepositoryMockRecorder) GetUserById(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockRepository)(nil).GetUserById), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockRepository)(nil).GetUsers), ctx, filters)
 }
 
 // UpdateUser mocks base method.

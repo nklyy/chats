@@ -12,22 +12,18 @@ func TestNewSupport(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	salt := 10
+	salt := "salt"
 
 	tests := []struct {
 		testName string
-		email    string
-		name     string
-		password string
-		salt     *int
+		ipAddr   string
+		salt     string
 		expect   func(*testing.T, *user.User, error)
 	}{
 		{
 			testName: "should return user",
-			email:    "email",
-			name:     "name",
-			password: "password",
-			salt:     &salt,
+			ipAddr:   "127.0.0.1",
+			salt:     salt,
 			expect: func(t *testing.T, support *user.User, err error) {
 				assert.NotNil(t, support)
 				assert.Nil(t, err)
@@ -35,46 +31,18 @@ func TestNewSupport(t *testing.T) {
 		},
 		{
 			testName: "should return email error",
-			email:    "",
-			name:     "name",
-			password: "password",
-			salt:     &salt,
+			ipAddr:   "",
+			salt:     salt,
 			expect: func(t *testing.T, s *user.User, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(user.ErrInvalidEmail, "should be not empty").Error())
-			},
-		},
-		{
-			testName: "should return name error",
-			email:    "email",
-			name:     "",
-			password: "password",
-			salt:     &salt,
-			expect: func(t *testing.T, s *user.User, err error) {
-				assert.Nil(t, s)
-				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(user.ErrInvalidName, "should be not empty").Error())
+				assert.EqualError(t, err, errors.WithMessage(user.ErrInvalidIpAddress, "should be not empty").Error())
 			},
 		},
 		{
 			testName: "should return password error",
-			email:    "email",
-			name:     "name",
-			password: "",
-			salt:     &salt,
-			expect: func(t *testing.T, s *user.User, err error) {
-				assert.Nil(t, s)
-				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(user.ErrInvalidPassword, "should be not empty").Error())
-			},
-		},
-		{
-			testName: "should return password error",
-			email:    "email",
-			name:     "name",
-			password: "password",
-			salt:     nil,
+			ipAddr:   "127.0.0.1",
+			salt:     "",
 			expect: func(t *testing.T, s *user.User, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
@@ -85,7 +53,7 @@ func TestNewSupport(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.testName, func(t *testing.T) {
-			svc, err := user.NewUser(tc.email, tc.name, tc.password, tc.salt)
+			svc, err := user.NewUser(tc.ipAddr, tc.salt)
 			tc.expect(t, svc, err)
 		})
 	}
