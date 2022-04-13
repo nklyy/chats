@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	ID        primitive.ObjectID `bson:"_id"`
-	IpAddress string             `bson:"ipAddress"`
+	IpAddress string             `bson:"ip_address"`
 	RoomName  *string            `bson:"roomName"`
 	Free      bool               `bson:"free"`
 	Banned    bool               `bson:"banned"`

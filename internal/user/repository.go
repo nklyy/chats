@@ -12,9 +12,8 @@ import (
 
 //go:generate mockgen -source=repository.go -destination=mocks/repository_mock.go
 type Repository interface {
-	GetUserById(ctx context.Context, id string) (*User, error)
-	GetUserByEmail(ctx context.Context, id string) (*User, error)
-	GetFreeUser(ctx context.Context) (*User, error)
+	GetUser(ctx context.Context, filters bson.M) (*User, error)
+	GetUsers(ctx context.Context, filters bson.M) ([]*User, error)
 	CreateUser(ctx context.Context, user *User) (string, error)
 	UpdateUser(ctx context.Context, user *User) error
 }
@@ -39,48 +38,26 @@ func NewRepository(db *mongo.Client, dbName string, logger *zap.SugaredLogger) (
 	return &repository{db: db, dbName: dbName, logger: logger}, nil
 }
 
-func (r *repository) GetUserById(ctx context.Context, id string) (*User, error) {
+func (r *repository) GetUser(ctx context.Context, filters bson.M) (*User, error) {
 	var user User
 
-	objId, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		r.logger.Errorf("failed to decode id %v", err)
-		return nil, ErrNotFound
-	}
-
-	if err := r.db.Database(r.dbName).Collection("user").FindOne(ctx, bson.M{"_id": objId}).Decode(&user); err != nil {
+	if err := r.db.Database(r.dbName).Collection("users").FindOne(ctx, filters).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
-			r.logger.Errorf("unable to find user by id '%s': %v", id, err)
+			r.logger.Errorf("unable to find user by ip : %v", err)
 			return nil, ErrNotFound
 		}
 
-		r.logger.Errorf("unable to find user due to internal error: %v; id: %s", err, id)
+		r.logger.Errorf("unable to find user due to internal error: %v", err)
 		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (r *repository) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-	var user User
-
-	if err := r.db.Database(r.dbName).Collection("user").FindOne(ctx, bson.M{"email": email}).Decode(&user); err != nil {
-		if err == mongo.ErrNoDocuments {
-			r.logger.Errorf("unable to find user by email '%s': %v", email, err)
-			return nil, ErrNotFound
-		}
-
-		r.logger.Errorf("unable to find user due to internal error: %v; id: %s", err, email)
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func (r *repository) GetFreeUser(ctx context.Context) (*User, error) {
+func (r *repository) GetUsers(ctx context.Context, filters bson.M) ([]*User, error) {
 	var users []*User
 
-	cursor, err := r.db.Database(r.dbName).Collection("user").Find(ctx, bson.M{"support": bson.M{"$eq": false}, "free": bson.M{"$eq": true}, "roomName": bson.M{"$ne": nil}})
+	cursor, err := r.db.Database(r.dbName).Collection("users").Find(ctx, filters)
 	if err != nil {
 		r.logger.Errorf("failed to get users: %v", err)
 		return nil, ErrFailedFindFreeUsers
@@ -91,26 +68,22 @@ func (r *repository) GetFreeUser(ctx context.Context) (*User, error) {
 		return nil, ErrFailedFindFreeUsers
 	}
 
-	if len(users) == 0 {
-		return nil, ErrNoUsersYet
-	}
-
-	return users[0], nil
+	return users, nil
 }
 
 func (r *repository) CreateUser(ctx context.Context, user *User) (string, error) {
 	mod := mongo.IndexModel{
-		Keys:    bson.M{"email": 1}, // index in ascending order or -1 for descending order
+		Keys:    bson.M{"ip": 1}, // index in ascending order or -1 for descending order
 		Options: options.Index().SetUnique(true),
 	}
 
-	_, err := r.db.Database(r.dbName).Collection("user").Indexes().CreateOne(ctx, mod)
+	_, err := r.db.Database(r.dbName).Collection("users").Indexes().CreateOne(ctx, mod)
 	if err != nil {
 		r.logger.Errorf("failed to create user index: %v", err)
 		return "", err
 	}
 
-	_, err = r.db.Database(r.dbName).Collection("user").InsertOne(ctx, user)
+	_, err = r.db.Database(r.dbName).Collection("users").InsertOne(ctx, user)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			r.logger.Errorf("failed to insert user data to db due to duplicate error: %v", err)
@@ -125,7 +98,7 @@ func (r *repository) CreateUser(ctx context.Context, user *User) (string, error)
 }
 
 func (r *repository) UpdateUser(ctx context.Context, user *User) error {
-	_, err := r.db.Database(r.dbName).Collection("user").UpdateOne(ctx, bson.M{"email": user.Email},
+	_, err := r.db.Database(r.dbName).Collection("users").UpdateOne(ctx, bson.M{"ip": user.IpAddress},
 		bson.D{primitive.E{Key: "$set", Value: user}})
 
 	if err != nil {

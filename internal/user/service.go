@@ -3,15 +3,17 @@ package user
 import (
 	"context"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
+	"math/rand"
+	"time"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
-	GetUserById(ctx context.Context, id string, withPassword bool) (*DTO, error)
-	GetUserByEmail(ctx context.Context, email string, withPassword bool) (*DTO, error)
+	GetUserByIp(ctx context.Context, ip string) (*DTO, error)
 	GetFreeUser(ctx context.Context) (*DTO, error)
-	CreateUser(ctx context.Context, email, name, password string) (*DTO, error)
+	CreateUser(ctx context.Context, ip string) (*DTO, error)
 	UpdateUser(ctx context.Context, userDTO *DTO) error
 }
 
@@ -35,79 +37,75 @@ func NewService(repository Repository, logger *zap.SugaredLogger, salt *int) (Se
 	return &service{repository: repository, logger: logger, salt: *salt}, nil
 }
 
-func (s *service) GetUserById(ctx context.Context, id string, withPassword bool) (*DTO, error) {
-	user, err := s.repository.GetUserById(ctx, id)
+func (s *service) GetUserByIp(ctx context.Context, ip string) (*DTO, error) {
+	user, err := s.repository.GetUser(ctx, bson.M{"ip_address": ip})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
-	}
-
-	if !withPassword {
-		user.RemovePassword()
-	}
-
-	return MapToDTO(user), nil
-}
-
-func (s *service) GetUserByEmail(ctx context.Context, id string, withPassword bool) (*DTO, error) {
-	user, err := s.repository.GetUserByEmail(ctx, id)
-	if err != nil {
-		s.logger.Errorf("failed to get user: %v", err)
-		return nil, err
-	}
-
-	if !withPassword {
-		user.RemovePassword()
 	}
 
 	return MapToDTO(user), nil
 }
 
 func (s *service) GetFreeUser(ctx context.Context) (*DTO, error) {
-	user, err := s.repository.GetFreeUser(ctx)
+	users, err := s.repository.GetUsers(ctx, bson.M{"free": bson.M{"$eq": true}, "roomName": bson.M{"$ne": nil}})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
 	}
 
-	userCtxValue := ctx.Value(contextKey("user"))
-	if userCtxValue == nil {
-		s.logger.Error("Not authenticated")
-		return nil, errors.New("not authenticated")
+	if len(users) == 0 {
+		return nil, ErrNoUsersYet
 	}
 
-	ctxUserDto := userCtxValue.(DTO)
+	rand.Seed(time.Now().Unix())
 
-	ctxUserEntity, err := MapToEntity(&ctxUserDto)
-	if err != nil {
-		s.logger.Error(err)
-		return nil, err
-	}
+	return MapToDTO(users[rand.Intn(len(users))]), nil
 
-	ctxUserEntity.SetRoom(user.RoomName)
-
-	// update support
-	err = s.UpdateUser(ctx, MapToDTO(ctxUserEntity))
-	if err != nil {
-		s.logger.Error(err)
-		return nil, ErrFailedUpdateUser
-	}
-
-	// update user
-	user.SetFreeStatus(false)
-	err = s.UpdateUser(ctx, MapToDTO(user))
-	if err != nil {
-		s.logger.Error(err)
-		return nil, ErrFailedUpdateUser
-	}
-
-	user.RemovePassword()
-
-	return MapToDTO(user), nil
+	//user, err := s.repository.GetFreeUser(ctx)
+	//if err != nil {
+	//	s.logger.Errorf("failed to get user: %v", err)
+	//	return nil, err
+	//}
+	//
+	//userCtxValue := ctx.Value(contextKey("user"))
+	//if userCtxValue == nil {
+	//	s.logger.Error("Not authenticated")
+	//	return nil, errors.New("not authenticated")
+	//}
+	//
+	//ctxUserDto := userCtxValue.(DTO)
+	//
+	//ctxUserEntity, err := MapToEntity(&ctxUserDto)
+	//if err != nil {
+	//	s.logger.Error(err)
+	//	return nil, err
+	//}
+	//
+	//ctxUserEntity.SetRoom(user.RoomName)
+	//
+	//// update support
+	//err = s.UpdateUser(ctx, MapToDTO(ctxUserEntity))
+	//if err != nil {
+	//	s.logger.Error(err)
+	//	return nil, ErrFailedUpdateUser
+	//}
+	//
+	//// update user
+	//user.SetFreeStatus(false)
+	//err = s.UpdateUser(ctx, MapToDTO(user))
+	//if err != nil {
+	//	s.logger.Error(err)
+	//	return nil, ErrFailedUpdateUser
+	//}
+	//
+	//user.RemovePassword()
+	//
+	//return MapToDTO(user), nil
 }
 
-func (s *service) CreateUser(ctx context.Context, email, name, password string) (*DTO, error) {
-	user, err := NewUser(email, name, password, &s.salt)
+func (s *service) CreateUser(ctx context.Context, ip string) (*DTO, error) {
+	user, err := NewUser(ip)
 	if err != nil {
 		s.logger.Errorf("failed to create new user %v", err)
 		return nil, ErrFailedCreateUser

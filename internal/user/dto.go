@@ -6,7 +6,7 @@ import (
 
 type DTO struct {
 	ID        string  `json:"id"`
-	IpAddress string  `json:"ipAddress"`
+	IpAddress string  `json:"ip_address"`
 	RoomName  *string `json:"roomName"`
 	Free      bool    `json:"free"`
 	Banned    bool    `json:"banned"`
