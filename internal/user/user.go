@@ -2,6 +2,7 @@ package user
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/scrypt"
 	"noname-realtime-support-chat/pkg/errors"
 	"time"
 )
@@ -17,14 +18,22 @@ type User struct {
 	UpdatedAt time.Time `bson:"updated_at"`
 }
 
-func NewUser(ipAddr string) (*User, error) {
+func NewUser(ipAddr, salt string) (*User, error) {
 	if ipAddr == "" {
 		return nil, errors.WithMessage(ErrInvalidIpAddress, "should be not empty")
+	}
+	if salt == "" {
+		return nil, errors.WithMessage(ErrInvalidSalt, "should be not empty")
+	}
+
+	hashAddr, err := scrypt.Key([]byte(ipAddr), []byte(salt), 16384, 8, 1, 32)
+	if err != nil {
+		return nil, err
 	}
 
 	return &User{
 		ID:        primitive.NewObjectID(),
-		IpAddress: ipAddr,
+		IpAddress: string(hashAddr),
 		RoomName:  nil,
 		Free:      true,
 		Banned:    false,

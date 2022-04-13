@@ -11,7 +11,7 @@ import (
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
-	GetUserByIp(ctx context.Context, ip string) (*DTO, error)
+	GetUserByIp(ctx context.Context, hashIp string) (*DTO, error)
 	GetFreeUser(ctx context.Context) (*DTO, error)
 	CreateUser(ctx context.Context, ip string) (*DTO, error)
 	UpdateUser(ctx context.Context, userDTO *DTO) error
@@ -20,25 +20,25 @@ type Service interface {
 type service struct {
 	repository Repository
 	logger     *zap.SugaredLogger
-	salt       int
+	salt       string
 }
 
-func NewService(repository Repository, logger *zap.SugaredLogger, salt *int) (Service, error) {
+func NewService(repository Repository, logger *zap.SugaredLogger, salt string) (Service, error) {
 	if repository == nil {
 		return nil, errors.New("invalid repository")
 	}
 	if logger == nil {
 		return nil, errors.New("invalid logger")
 	}
-	if salt == nil {
+	if salt == "" {
 		return nil, errors.New("invalid salt")
 	}
 
-	return &service{repository: repository, logger: logger, salt: *salt}, nil
+	return &service{repository: repository, logger: logger, salt: salt}, nil
 }
 
-func (s *service) GetUserByIp(ctx context.Context, ip string) (*DTO, error) {
-	user, err := s.repository.GetUser(ctx, bson.M{"ip_address": ip})
+func (s *service) GetUserByIp(ctx context.Context, hashIp string) (*DTO, error) {
+	user, err := s.repository.GetUser(ctx, bson.M{"ip_address": hashIp})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
@@ -105,7 +105,7 @@ func (s *service) GetFreeUser(ctx context.Context) (*DTO, error) {
 }
 
 func (s *service) CreateUser(ctx context.Context, ip string) (*DTO, error) {
-	user, err := NewUser(ip)
+	user, err := NewUser(ip, s.salt)
 	if err != nil {
 		s.logger.Errorf("failed to create new user %v", err)
 		return nil, ErrFailedCreateUser
