@@ -72,6 +72,7 @@ func (s *service) Chat(ctx context.Context, ws *websocket.Conn) error {
 
 	go c.WritePump()
 	go c.ReadPump(s.messageHandler)
+	//s.cleanOldClient(&u)
 	s.registerClientAndCreateRoom(ctx, c, &u)
 
 	return nil
@@ -86,6 +87,7 @@ func (s *service) registerClientAndCreateRoom(ctx context.Context, client *room.
 				s.createRoomIfDoesntExist(ctx, client, u)
 			} else {
 				client.Room = r
+				//s.cleanOldClientInRoom(r, u)
 				r.Clients[client] = true
 			}
 		} else {
@@ -117,12 +119,35 @@ func (s *service) registerClientAndCreateRoom(ctx context.Context, client *room.
 				return
 			}
 		} else {
+			//s.cleanOldClientInRoom(r, u)
 			r.Clients[client] = true
 		}
 	}
 
 	s.clients[client] = true
+	//fmt.Println(len(s.clients))
+	//for r := range s.rooms {
+	//	fmt.Println(len(r.Clients))
+	//}
 }
+
+//func (s *service) cleanOldClient(u *user.DTO) {
+//	for client := range s.clients {
+//		if client.Id == u.ID {
+//			client.Connection.Close()
+//			delete(s.clients, client)
+//		}
+//	}
+//}
+//
+//func (s *service) cleanOldClientInRoom(r *room.Room, u *user.DTO) {
+//	for client := range r.Clients {
+//		if client.Id == u.ID {
+//			//client.Connection.Close()
+//			delete(r.Clients, client)
+//		}
+//	}
+//}
 
 func (s *service) findRoom(ctx context.Context, roomName string) *room.Room {
 	var foundRoom *room.Room
