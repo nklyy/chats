@@ -8,7 +8,7 @@ import (
 const (
 	StatusUserAlreadyExists         errors.Status = "user_already_exists"
 	StatusUserNotFound              errors.Status = "user_not_found"
-	StatusInvalidEmail              errors.Status = "invalid_email"
+	StatusInvalidIpAddress          errors.Status = "invalid_ip_address"
 	StatusInvalidName               errors.Status = "invalid_name"
 	StatusInvalidPassword           errors.Status = "invalid_password"
 	StatusInvalidSalt               errors.Status = "invalid_salt"
@@ -25,7 +25,7 @@ const (
 var (
 	ErrAlreadyExists             = errors.New(codes.DuplicateError, StatusUserAlreadyExists)
 	ErrNotFound                  = errors.New(codes.NotFound, StatusUserNotFound)
-	ErrInvalidEmail              = errors.New(codes.BadRequest, StatusInvalidEmail)
+	ErrInvalidIpAddress          = errors.New(codes.BadRequest, StatusInvalidIpAddress)
 	ErrInvalidName               = errors.New(codes.BadRequest, StatusInvalidName)
 	ErrInvalidPassword           = errors.New(codes.BadRequest, StatusInvalidPassword)
 	ErrInvalidSalt               = errors.New(codes.BadRequest, StatusInvalidSalt)

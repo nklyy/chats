@@ -6,19 +6,12 @@ import (
 )
 
 func MapToDTO(u *User) *DTO {
-	//var roomName string
-	//if u.RoomName != nil {
-	//	roomName = *u.RoomName
-	//}
-
 	return &DTO{
 		ID:        u.ID.Hex(),
-		Email:     u.Email,
-		Name:      u.Name,
-		Password:  u.Password,
-		Support:   u.Support,
+		IpAddress: u.IpAddress,
 		RoomName:  u.RoomName,
 		Free:      u.Free,
+		Banned:    u.Banned,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}
@@ -32,12 +25,10 @@ func MapToEntity(dto *DTO) (*User, error) {
 
 	return &User{
 		ID:        id,
-		Email:     dto.Email,
-		Name:      dto.Name,
-		Password:  dto.Password,
-		Support:   dto.Support,
+		IpAddress: dto.IpAddress,
 		RoomName:  dto.RoomName,
 		Free:      dto.Free,
+		Banned:    dto.Banned,
 		CreatedAt: dto.CreatedAt,
 		UpdatedAt: dto.UpdatedAt,
 	}, nil
