@@ -73,7 +73,7 @@ func (r *repository) GetUsers(ctx context.Context, filters bson.M) ([]*User, err
 
 func (r *repository) CreateUser(ctx context.Context, user *User) (string, error) {
 	mod := mongo.IndexModel{
-		Keys:    bson.M{"ip": 1}, // index in ascending order or -1 for descending order
+		Keys:    bson.M{"ip_address": 1}, // index in ascending order or -1 for descending order
 		Options: options.Index().SetUnique(true),
 	}
 

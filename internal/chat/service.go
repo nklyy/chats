@@ -73,9 +73,9 @@ func (s *service) Chat(ctx context.Context, ws *websocket.Conn) error {
 	if usr == nil {
 		usr, _ = s.userSvc.CreateUser(ctx, host)
 	}
-	//fmt.Println(usr)
+	fmt.Println(usr)
 
-	//fmt.Println("SADASDASDASDASD", hashedAddr)
+	fmt.Println("SADASDASDASDASD", hashedAddr)
 	newClient, _ := room.NewClient(usr.ID, ws)
 	go newClient.WritePump()
 	go newClient.ReadPump(s.messageHandler, hashedAddr)
