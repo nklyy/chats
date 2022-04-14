@@ -67,7 +67,7 @@ func main() {
 	zapLogger.Info("DB connected successfully")
 
 	// Redis
-	redisChatClient, err := redis.NewClient(cfg.RedisHostChat, cfg.RedisPortChat)
+	redisChatClient, err := redis.NewClient(cfg.RedisHost, cfg.RedisPort)
 	if err != nil {
 		zapLogger.Fatalf("failed to connect to chat redis: %v", err)
 	}
