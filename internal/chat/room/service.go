@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/user"
+	"noname-realtime-support-chat/internal/chat/user"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
 	GetRoomByName(ctx context.Context, name string) (*DTO, error)
 	GetRoomWithFormatMessages(ctx context.Context, name, userId string) ([]*FormatMessages, error)
-	CreateRoom(ctx context.Context, name string, user *user.DTO) (*Room, error)
+	CreateRoom(ctx context.Context, name string) (*Room, error)
 	UpdateRoom(ctx context.Context, dto *DTO) error
 	DeleteRoom(ctx context.Context, name string) error
 }
@@ -75,7 +75,7 @@ func (s *service) GetRoomWithFormatMessages(ctx context.Context, name, userId st
 	return msg, nil
 }
 
-func (s *service) CreateRoom(ctx context.Context, roomName string, u *user.DTO) (*Room, error) {
+func (s *service) CreateRoom(ctx context.Context, roomName string) (*Room, error) {
 	room, err := NewRoom(roomName)
 	if err != nil {
 		s.logger.Errorf("failed to create new user %v", err)
@@ -94,17 +94,17 @@ func (s *service) CreateRoom(ctx context.Context, roomName string, u *user.DTO) 
 		return nil, err
 	}
 
-	userEntity, _ := user.MapToEntity(u)
-	userEntity.SetRoom(&roomName)
-	userEntity.SetFreeStatus(true)
-
-	userDto := user.MapToDTO(userEntity)
-
-	err = s.userSvc.UpdateUser(ctx, userDto)
-	if err != nil {
-		s.logger.Errorf("failed to update user %v", err)
-		return nil, err
-	}
+	//userEntity, _ := user2.MapToEntity(u)
+	//userEntity.SetRoom(&roomName)
+	//userEntity.SetFreeStatus(true)
+	//
+	//userDto := user2.MapToDTO(userEntity)
+	//
+	//err = s.userSvc.UpdateUser(ctx, userDto)
+	//if err != nil {
+	//	s.logger.Errorf("failed to update user %v", err)
+	//	return nil, err
+	//}
 
 	return room, nil
 }

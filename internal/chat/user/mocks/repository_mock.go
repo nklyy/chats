@@ -6,7 +6,7 @@ package mock_user
 
 import (
 	context "context"
-	user "noname-realtime-support-chat/internal/user"
+	"noname-realtime-support-chat/internal/chat/user"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

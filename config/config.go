@@ -9,7 +9,7 @@ import (
 type Config struct {
 	PORT        string `required:"true" default:"5000" envconfig:"PORT"`
 	Environment string `required:"true" envconfig:"APP_ENV"`
-	Salt        int    `required:"true" envconfig:"SALT"`
+	Salt        string `required:"true" envconfig:"SALT"`
 	MongoDb
 	Jwt
 	Redis

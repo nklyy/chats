@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/user"
-	mock_user "noname-realtime-support-chat/internal/user/mocks"
+	"noname-realtime-support-chat/internal/chat/user"
+	"noname-realtime-support-chat/internal/chat/user/mocks"
 	"noname-realtime-support-chat/pkg/logger"
 	"testing"
 )

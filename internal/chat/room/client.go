@@ -3,7 +3,6 @@ package room
 import (
 	"github.com/gorilla/websocket"
 	"log"
-
 	"noname-realtime-support-chat/pkg/errors"
 	"time"
 )
@@ -45,9 +44,9 @@ func NewClient(id string, conn *websocket.Conn) (*Client, error) {
 	}, nil
 }
 
-type HandlerFunc func([]byte)
+type HandlerFunc func([]byte, string)
 
-func (c *Client) ReadPump(msgHandleFunc HandlerFunc) {
+func (c *Client) ReadPump(msgHandleFunc HandlerFunc, hashedAddr string) {
 	c.Connection.SetReadLimit(maxMessageSize)
 	err := c.Connection.SetReadDeadline(time.Now().Add(pongWait))
 	if err != nil {
@@ -72,7 +71,7 @@ func (c *Client) ReadPump(msgHandleFunc HandlerFunc) {
 			break
 		}
 
-		msgHandleFunc(jsonMessage)
+		msgHandleFunc(jsonMessage, hashedAddr)
 	}
 }
 

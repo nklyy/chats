@@ -60,7 +60,7 @@ func TestInit(t *testing.T) {
 					environment:      "development",
 					mongoDbName:      "example",
 					mongoDbUrl:       "http://127.0.0.1",
-					salt:             "11",
+					salt:             "salt",
 					jwtSecretAccess:  "jwt",
 					jwtExpiryAccess:  "100",
 					jwtSecretRefresh: "asd",
@@ -75,7 +75,7 @@ func TestInit(t *testing.T) {
 			want: &config.Config{
 				PORT:        "5000",
 				Environment: "development",
-				Salt:        11,
+				Salt:        "salt",
 				MongoDb: config.MongoDb{
 					MongoDbName: "example",
 					MongoDbUrl:  "http://127.0.0.1",

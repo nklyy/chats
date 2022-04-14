@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 	"math/rand"
 	"time"
@@ -11,8 +12,8 @@ import (
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
-	GetUserByIp(ctx context.Context, hashIp string) (*DTO, error)
-	GetFreeUser(ctx context.Context) (*DTO, error)
+	GetUserByIp(ctx context.Context, hashedIp string) (*DTO, error)
+	GetFreeUser(ctx context.Context, userId string) (*DTO, error)
 	CreateUser(ctx context.Context, ip string) (*DTO, error)
 	UpdateUser(ctx context.Context, userDTO *DTO) error
 }
@@ -47,8 +48,14 @@ func (s *service) GetUserByIp(ctx context.Context, hashedIp string) (*DTO, error
 	return MapToDTO(user), nil
 }
 
-func (s *service) GetFreeUser(ctx context.Context) (*DTO, error) {
-	users, err := s.repository.GetUsers(ctx, bson.M{"free": bson.M{"$eq": true}, "roomName": bson.M{"$ne": nil}})
+func (s *service) GetFreeUser(ctx context.Context, userId string) (*DTO, error) {
+	id, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		s.logger.Errorf("failed conver user id: %v", err)
+		return nil, err
+	}
+
+	users, err := s.repository.GetUsers(ctx, bson.M{"_id": bson.M{"$ne": id}, "room_name": bson.M{"$ne": nil}})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err

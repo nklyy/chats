@@ -1,6 +1,7 @@
 package user
 
 import (
+	"encoding/base64"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/scrypt"
 	"noname-realtime-support-chat/pkg/errors"
@@ -10,8 +11,7 @@ import (
 type User struct {
 	ID        primitive.ObjectID `bson:"_id"`
 	IpAddress string             `bson:"ip_address"`
-	RoomName  *string            `bson:"roomName"`
-	Free      bool               `bson:"free"`
+	RoomName  *string            `bson:"room_name"`
 	Banned    bool               `bson:"banned"`
 
 	CreatedAt time.Time `bson:"created_at"`
@@ -33,19 +33,18 @@ func NewUser(ipAddr, salt string) (*User, error) {
 
 	return &User{
 		ID:        primitive.NewObjectID(),
-		IpAddress: string(hashAddr),
+		IpAddress: base64.StdEncoding.EncodeToString(hashAddr),
 		RoomName:  nil,
-		Free:      true,
 		Banned:    false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}, nil
 }
 
-func (s *User) SetFreeStatus(status bool) {
-	s.Free = status
-	s.UpdatedAt = time.Now()
-}
+//func (s *User) SetFreeStatus(status bool) {
+//	s.Free = status
+//	s.UpdatedAt = time.Now()
+//}
 
 func (s *User) SetRoom(roomName *string) {
 	s.RoomName = roomName

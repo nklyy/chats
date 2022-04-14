@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/user"
+	"noname-realtime-support-chat/internal/chat/user"
 	"testing"
 )
 

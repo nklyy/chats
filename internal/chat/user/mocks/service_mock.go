@@ -6,7 +6,7 @@ package mock_user
 
 import (
 	context "context"
-	user "noname-realtime-support-chat/internal/user"
+	"noname-realtime-support-chat/internal/chat/user"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -66,18 +66,18 @@ func (mr *MockServiceMockRecorder) GetFreeUser(ctx interface{}) *gomock.Call {
 }
 
 // GetUserByIp mocks base method.
-func (m *MockService) GetUserByIp(ctx context.Context, hashIp string) (*user.DTO, error) {
+func (m *MockService) GetUserByIp(ctx context.Context, hashedIp string) (*user.DTO, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByIp", ctx, hashIp)
+	ret := m.ctrl.Call(m, "GetUserByIp", ctx, hashedIp)
 	ret0, _ := ret[0].(*user.DTO)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetUserByIp indicates an expected call of GetUserByIp.
-func (mr *MockServiceMockRecorder) GetUserByIp(ctx, hashIp interface{}) *gomock.Call {
+func (mr *MockServiceMockRecorder) GetUserByIp(ctx, hashedIp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByIp", reflect.TypeOf((*MockService)(nil).GetUserByIp), ctx, hashIp)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByIp", reflect.TypeOf((*MockService)(nil).GetUserByIp), ctx, hashedIp)
 }
 
 // UpdateUser mocks base method.

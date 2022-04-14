@@ -24,7 +24,7 @@ type MessageResponse struct {
 type BroadcastMessage struct {
 	Action   string          `json:"action"`
 	Message  MessageResponse `json:"message"`
-	RoomName string          `json:"roomName"`
+	RoomName string          `json:"room_name"`
 }
 
 type FormatMessages struct {
