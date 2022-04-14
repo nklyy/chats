@@ -9,20 +9,13 @@ import (
 
 func TestInit(t *testing.T) {
 	type env struct {
-		port             string
-		environment      string
-		mongoDbName      string
-		mongoDbUrl       string
-		salt             string
-		jwtSecretAccess  string
-		jwtExpiryAccess  string
-		jwtSecretRefresh string
-		jwtExpiryRefresh string
-		autoLogout       string
-		redisHostAuth    string
-		redisPortAuth    string
-		redisHostChat    string
-		redisPortChat    string
+		port        string
+		environment string
+		mongoDbName string
+		mongoDbUrl  string
+		salt        string
+		redisHost   string
+		redisPort   string
 	}
 
 	type args struct {
@@ -35,15 +28,8 @@ func TestInit(t *testing.T) {
 		os.Setenv("MONGO_DB_NAME", env.mongoDbName)
 		os.Setenv("MONGO_DB_URL", env.mongoDbUrl)
 		os.Setenv("SALT", env.salt)
-		os.Setenv("JWT_SECRET_ACCESS", env.jwtSecretAccess)
-		os.Setenv("JWT_EXPIRY_ACCESS", env.jwtExpiryAccess)
-		os.Setenv("JWT_SECRET_REFRESH", env.jwtSecretRefresh)
-		os.Setenv("JWT_EXPIRY_REFRESH", env.jwtExpiryRefresh)
-		os.Setenv("AUTO_LOGOUT", env.autoLogout)
-		os.Setenv("REDIS_HOST_AUTH", env.redisHostAuth)
-		os.Setenv("REDIS_PORT_AUTH", env.redisPortAuth)
-		os.Setenv("REDIS_HOST_CHAT", env.redisHostChat)
-		os.Setenv("REDIS_PORT_CHAT", env.redisPortChat)
+		os.Setenv("REDIS_HOST", env.redisHost)
+		os.Setenv("REDIS_PORT", env.redisPort)
 	}
 
 	tests := []struct {
@@ -56,20 +42,13 @@ func TestInit(t *testing.T) {
 			name: "Test config file!",
 			args: args{
 				env: env{
-					port:             "5000",
-					environment:      "development",
-					mongoDbName:      "example",
-					mongoDbUrl:       "http://127.0.0.1",
-					salt:             "salt",
-					jwtSecretAccess:  "jwt",
-					jwtExpiryAccess:  "100",
-					jwtSecretRefresh: "asd",
-					jwtExpiryRefresh: "300",
-					autoLogout:       "3",
-					redisHostAuth:    "localhost",
-					redisPortAuth:    "1234",
-					redisHostChat:    "localhost",
-					redisPortChat:    "4321",
+					port:        "5000",
+					environment: "development",
+					mongoDbName: "example",
+					mongoDbUrl:  "http://127.0.0.1",
+					salt:        "salt",
+					redisHost:   "localhost",
+					redisPort:   "1234",
 				},
 			},
 			want: &config.Config{
@@ -80,18 +59,9 @@ func TestInit(t *testing.T) {
 					MongoDbName: "example",
 					MongoDbUrl:  "http://127.0.0.1",
 				},
-				Jwt: config.Jwt{
-					JwtSecretAccess:  "jwt",
-					JwtExpiryAccess:  100,
-					JwtSecretRefresh: "asd",
-					JwtExpiryRefresh: 300,
-					AutoLogout:       3,
-				},
 				Redis: config.Redis{
-					RedisHostAuth: "localhost",
-					RedisPortAuth: "1234",
-					RedisHostChat: "localhost",
-					RedisPortChat: "4321",
+					RedisHost: "localhost",
+					RedisPort: "1234",
 				},
 			},
 		},

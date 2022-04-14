@@ -11,7 +11,6 @@ type Config struct {
 	Environment string `required:"true" envconfig:"APP_ENV"`
 	Salt        string `required:"true" envconfig:"SALT"`
 	MongoDb
-	Jwt
 	Redis
 }
 
@@ -20,19 +19,9 @@ type MongoDb struct {
 	MongoDbUrl  string `required:"true" envconfig:"MONGO_DB_URL"`
 }
 
-type Jwt struct {
-	JwtSecretAccess  string `required:"true" envconfig:"JWT_SECRET_ACCESS"`
-	JwtExpiryAccess  int    `required:"true" envconfig:"JWT_EXPIRY_ACCESS"`
-	JwtSecretRefresh string `required:"true" envconfig:"JWT_SECRET_REFRESH"`
-	JwtExpiryRefresh int    `required:"true" envconfig:"JWT_EXPIRY_REFRESH"`
-	AutoLogout       int    `required:"true" envconfig:"AUTO_LOGOUT"`
-}
-
 type Redis struct {
-	RedisHostAuth string `required:"true" envconfig:"REDIS_HOST_AUTH"`
-	RedisPortAuth string `required:"true" envconfig:"REDIS_PORT_AUTH"`
-	RedisHostChat string `required:"true" envconfig:"REDIS_HOST_CHAT"`
-	RedisPortChat string `required:"true" envconfig:"REDIS_PORT_CHAT"`
+	RedisHost string `required:"true" envconfig:"REDIS_HOST"`
+	RedisPort string `required:"true" envconfig:"REDIS_PORT"`
 }
 
 var (
