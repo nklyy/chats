@@ -1,43 +1,36 @@
 package user
 
 import (
-	"encoding/base64"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"golang.org/x/crypto/scrypt"
 	"noname-realtime-support-chat/pkg/errors"
 	"time"
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id"`
-	IpAddress string             `bson:"ip_address"`
-	RoomName  *string            `bson:"room_name"`
-	Banned    bool               `bson:"banned"`
+	ID          primitive.ObjectID `bson:"_id"`
+	Fingerprint string             `bson:"fingerprint"`
+	RoomName    *string            `bson:"room_name"`
+	Banned      bool               `bson:"banned"`
 
 	CreatedAt time.Time `bson:"created_at"`
 	UpdatedAt time.Time `bson:"updated_at"`
 }
 
-func NewUser(ipAddr, salt string) (*User, error) {
-	if ipAddr == "" {
+func NewUser(fingerprint, salt string) (*User, error) {
+	if fingerprint == "" {
 		return nil, errors.WithMessage(ErrInvalidIpAddress, "should be not empty")
 	}
 	if salt == "" {
 		return nil, errors.WithMessage(ErrInvalidSalt, "should be not empty")
 	}
 
-	hashAddr, err := scrypt.Key([]byte(ipAddr), []byte(salt), 16384, 8, 1, 32)
-	if err != nil {
-		return nil, err
-	}
-
 	return &User{
-		ID:        primitive.NewObjectID(),
-		IpAddress: base64.StdEncoding.EncodeToString(hashAddr),
-		RoomName:  nil,
-		Banned:    false,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:          primitive.NewObjectID(),
+		Fingerprint: fingerprint,
+		RoomName:    nil,
+		Banned:      false,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}, nil
 }
 

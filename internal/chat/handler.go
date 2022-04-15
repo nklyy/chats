@@ -32,13 +32,15 @@ func (h *Handler) SetupRoutes(router chi.Router) {
 }
 
 func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
+	fingerprint := r.URL.Query().Get("fingerprint")
+
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))
 		return
 	}
 
-	err = h.chatSvc.Chat(r.Context(), ws)
+	err = h.chatSvc.Chat(r.Context(), fingerprint, ws)
 	if err != nil {
 		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))
 		return

@@ -12,9 +12,10 @@ import (
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
-	GetUserByIp(ctx context.Context, hashedIp string) (*DTO, error)
+	GetUserById(ctx context.Context, id string) (*DTO, error)
+	GetUserByFingerprint(ctx context.Context, fingerprint string) (*DTO, error)
 	GetFreeUser(ctx context.Context, userId string) (*DTO, error)
-	CreateUser(ctx context.Context, ip string) (*DTO, error)
+	CreateUser(ctx context.Context, fingerprint string) (*DTO, error)
 	UpdateUser(ctx context.Context, userDTO *DTO) error
 }
 
@@ -38,8 +39,23 @@ func NewService(repository Repository, logger *zap.SugaredLogger, salt string) (
 	return &service{repository: repository, logger: logger, salt: salt}, nil
 }
 
-func (s *service) GetUserByIp(ctx context.Context, hashedIp string) (*DTO, error) {
-	user, err := s.repository.GetUser(ctx, bson.M{"ip_address": hashedIp})
+func (s *service) GetUserById(ctx context.Context, id string) (*DTO, error) {
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := s.repository.GetUser(ctx, bson.M{"_id": objId})
+	if err != nil {
+		s.logger.Errorf("failed to get user: %v", err)
+		return nil, err
+	}
+
+	return MapToDTO(user), nil
+}
+
+func (s *service) GetUserByFingerprint(ctx context.Context, fingerprint string) (*DTO, error) {
+	user, err := s.repository.GetUser(ctx, bson.M{"fingerprint": fingerprint})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
@@ -55,7 +71,7 @@ func (s *service) GetFreeUser(ctx context.Context, userId string) (*DTO, error) 
 		return nil, err
 	}
 
-	users, err := s.repository.GetUsers(ctx, bson.M{"_id": bson.M{"$ne": id}, "room_name": bson.M{"$ne": nil}})
+	users, err := s.repository.GetUsers(ctx, bson.M{"_id": bson.M{"$ne": id}, "room_name": bson.M{"$eq": nil}})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
@@ -111,8 +127,8 @@ func (s *service) GetFreeUser(ctx context.Context, userId string) (*DTO, error) 
 	//return MapToDTO(user), nil
 }
 
-func (s *service) CreateUser(ctx context.Context, ip string) (*DTO, error) {
-	user, err := NewUser(ip, s.salt)
+func (s *service) CreateUser(ctx context.Context, fingerprint string) (*DTO, error) {
+	user, err := NewUser(fingerprint, s.salt)
 	if err != nil {
 		s.logger.Errorf("failed to create new user %v", err)
 		return nil, ErrFailedCreateUser

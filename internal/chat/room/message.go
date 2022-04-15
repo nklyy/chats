@@ -3,9 +3,9 @@ package room
 import "time"
 
 type Message struct {
-	Action  string           `json:"action"`
-	Message EncryptedMessage `json:"message,omitempty"`
-	Token   string           `json:"token"`
+	Action      string           `json:"action"`
+	Message     EncryptedMessage `json:"message,omitempty"`
+	Fingerprint string           `json:"fingerprint"`
 }
 
 type EncryptedMessage struct {

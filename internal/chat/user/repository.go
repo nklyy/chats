@@ -43,7 +43,7 @@ func (r *repository) GetUser(ctx context.Context, filters bson.M) (*User, error)
 
 	if err := r.db.Database(r.dbName).Collection("users").FindOne(ctx, filters).Decode(&user); err != nil {
 		if err == mongo.ErrNoDocuments {
-			r.logger.Errorf("unable to find user by ip : %v", err)
+			r.logger.Errorf("unable to find user by fingerprint : %v", err)
 			return nil, ErrNotFound
 		}
 
@@ -73,7 +73,7 @@ func (r *repository) GetUsers(ctx context.Context, filters bson.M) ([]*User, err
 
 func (r *repository) CreateUser(ctx context.Context, user *User) (string, error) {
 	mod := mongo.IndexModel{
-		Keys:    bson.M{"ip_address": 1}, // index in ascending order or -1 for descending order
+		Keys:    bson.M{"fingerprint": 1}, // index in ascending order or -1 for descending order
 		Options: options.Index().SetUnique(true),
 	}
 
@@ -98,7 +98,7 @@ func (r *repository) CreateUser(ctx context.Context, user *User) (string, error)
 }
 
 func (r *repository) UpdateUser(ctx context.Context, user *User) error {
-	_, err := r.db.Database(r.dbName).Collection("users").UpdateOne(ctx, bson.M{"ip": user.IpAddress},
+	_, err := r.db.Database(r.dbName).Collection("users").UpdateOne(ctx, bson.M{"fingerprint": user.Fingerprint},
 		bson.D{primitive.E{Key: "$set", Value: user}})
 
 	if err != nil {

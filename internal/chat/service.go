@@ -11,14 +11,13 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/scrypt"
-	"net"
 	"noname-realtime-support-chat/internal/chat/room"
 	"noname-realtime-support-chat/internal/chat/user"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go
 type Service interface {
-	Chat(ctx context.Context, ws *websocket.Conn) error
+	Chat(ctx context.Context, fingerprint string, ws *websocket.Conn) error
 }
 
 type service struct {
@@ -58,27 +57,17 @@ func NewService(redisClient *redis.Client, roomSvc room.Service, userSvc user.Se
 	}, nil
 }
 
-func (s *service) Chat(ctx context.Context, ws *websocket.Conn) error {
-	// IPv6
-	host, port, err := net.SplitHostPort(ws.RemoteAddr().String())
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(host, port)
-
-	var usr *user.DTO
-
-	hashedAddr, _ := s.createHash(host)
-	usr, _ = s.userSvc.GetUserByIp(ctx, hashedAddr)
+func (s *service) Chat(ctx context.Context, fingerprint string, ws *websocket.Conn) error {
+	usr, _ := s.userSvc.GetUserByFingerprint(ctx, fingerprint)
 	if usr == nil {
-		usr, _ = s.userSvc.CreateUser(ctx, host)
+		usr, _ = s.userSvc.CreateUser(ctx, fingerprint)
 	}
 	fmt.Println(usr)
 
-	fmt.Println("SADASDASDASDASD", hashedAddr)
+	fmt.Println("SADASDASDASDASD", fingerprint)
 	newClient, _ := room.NewClient(usr.ID, ws)
 	go newClient.WritePump()
-	go newClient.ReadPump(s.messageHandler, hashedAddr)
+	go newClient.ReadPump(s.messageHandler)
 	s.findCompanion(ctx, newClient, usr)
 
 	return nil

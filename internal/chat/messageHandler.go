@@ -3,13 +3,12 @@ package chat
 import (
 	"context"
 	"encoding/json"
-	"net"
 	"noname-realtime-support-chat/internal/chat/room"
 	"noname-realtime-support-chat/internal/chat/user"
 	"time"
 )
 
-func (s *service) messageHandler(jsonMessage []byte, hashedAddr string) {
+func (s *service) messageHandler(jsonMessage []byte) {
 	var message room.Message
 	if err := json.Unmarshal(jsonMessage, &message); err != nil {
 		s.logger.Errorf("Error on unmarshal JSON message %s", err)
@@ -18,7 +17,7 @@ func (s *service) messageHandler(jsonMessage []byte, hashedAddr string) {
 
 	switch message.Action {
 	case "publish-room":
-		dbUser, err := s.userSvc.GetUserByIp(context.Background(), hashedAddr)
+		dbUser, err := s.userSvc.GetUserByFingerprint(context.Background(), message.Fingerprint)
 		if err != nil {
 			s.logger.Errorf("failed to get user %v", err)
 		}
@@ -76,7 +75,7 @@ func (s *service) messageHandler(jsonMessage []byte, hashedAddr string) {
 			}
 		}
 	case "disconnect":
-		dbUser, err := s.userSvc.GetUserByIp(context.Background(), hashedAddr)
+		dbUser, err := s.userSvc.GetUserByFingerprint(context.Background(), message.Fingerprint)
 		if err != nil {
 			s.logger.Errorf("failed to get user %v", err)
 		}
@@ -84,13 +83,7 @@ func (s *service) messageHandler(jsonMessage []byte, hashedAddr string) {
 		for r := range s.rooms {
 			if r.Name == *dbUser.RoomName {
 				for client := range r.Clients {
-					host, _, err := net.SplitHostPort(client.Connection.RemoteAddr().String())
-					if err != nil {
-						s.logger.Errorf("failed to split host and port %v", err)
-					}
-					hashedAddr, _ := s.createHash(host)
-
-					rUser, err := s.userSvc.GetUserByIp(context.Background(), hashedAddr)
+					rUser, err := s.userSvc.GetUserById(context.Background(), client.Id)
 					if err != nil {
 						s.logger.Errorf("failed to get user %v", err)
 					}

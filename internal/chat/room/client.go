@@ -44,9 +44,9 @@ func NewClient(id string, conn *websocket.Conn) (*Client, error) {
 	}, nil
 }
 
-type HandlerFunc func([]byte, string)
+type HandlerFunc func([]byte)
 
-func (c *Client) ReadPump(msgHandleFunc HandlerFunc, hashedAddr string) {
+func (c *Client) ReadPump(msgHandleFunc HandlerFunc) {
 	c.Connection.SetReadLimit(maxMessageSize)
 	err := c.Connection.SetReadDeadline(time.Now().Add(pongWait))
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *Client) ReadPump(msgHandleFunc HandlerFunc, hashedAddr string) {
 			break
 		}
 
-		msgHandleFunc(jsonMessage, hashedAddr)
+		msgHandleFunc(jsonMessage)
 	}
 }
 

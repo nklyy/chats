@@ -7,12 +7,12 @@ import (
 
 func MapToDTO(u *User) *DTO {
 	return &DTO{
-		ID:        u.ID.Hex(),
-		IpAddress: u.IpAddress,
-		RoomName:  u.RoomName,
-		Banned:    u.Banned,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
+		ID:          u.ID.Hex(),
+		Fingerprint: u.Fingerprint,
+		RoomName:    u.RoomName,
+		Banned:      u.Banned,
+		CreatedAt:   u.CreatedAt,
+		UpdatedAt:   u.UpdatedAt,
 	}
 }
 
@@ -23,11 +23,11 @@ func MapToEntity(dto *DTO) (*User, error) {
 	}
 
 	return &User{
-		ID:        id,
-		IpAddress: dto.IpAddress,
-		RoomName:  dto.RoomName,
-		Banned:    dto.Banned,
-		CreatedAt: dto.CreatedAt,
-		UpdatedAt: dto.UpdatedAt,
+		ID:          id,
+		Fingerprint: dto.Fingerprint,
+		RoomName:    dto.RoomName,
+		Banned:      dto.Banned,
+		CreatedAt:   dto.CreatedAt,
+		UpdatedAt:   dto.UpdatedAt,
 	}, nil
 }
