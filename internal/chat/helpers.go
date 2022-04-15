@@ -28,6 +28,19 @@ func (s *service) createHash(data string) (string, error) {
 func (s *service) cleanupOldConnections(userFingerprint string) {
 	for client := range s.clients {
 		if client.Fingerprint == userFingerprint {
+			if client.Room != nil {
+				for rm := range s.rooms {
+					if rm.Name == client.Room.Name {
+						for roomClient := range rm.Clients {
+							roomClient.Connection.Close()
+							delete(s.clients, roomClient)
+						}
+
+						delete(s.rooms, rm)
+					}
+				}
+			}
+
 			client.Connection.Close()
 			delete(s.clients, client)
 		}
