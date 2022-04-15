@@ -22,25 +22,25 @@ const (
 )
 
 type Client struct {
-	Id         string          `json:"id"`
-	Room       *Room           `json:"room"`
-	Connection *websocket.Conn `json:"connection"`
-	Send       chan []byte     `json:"send"`
+	Fingerprint string          `json:"fingerprint"`
+	Room        *Room           `json:"room"`
+	Connection  *websocket.Conn `json:"connection"`
+	Send        chan []byte     `json:"send"`
 }
 
-func NewClient(id string, conn *websocket.Conn) (*Client, error) {
-	if id == "" {
-		return nil, errors.WithMessage(ErrInvalidId, "should be not empty")
+func NewClient(fingerprint string, conn *websocket.Conn) (*Client, error) {
+	if fingerprint == "" {
+		return nil, errors.WithMessage(ErrInvalidFingerprint, "should be not empty")
 	}
 	if conn == nil {
 		return nil, errors.WithMessage(ErrInvalidConnection, "should be not empty")
 	}
 
 	return &Client{
-		Id:         id,
-		Room:       nil,
-		Connection: conn,
-		Send:       make(chan []byte, 256),
+		Fingerprint: fingerprint,
+		Room:        nil,
+		Connection:  conn,
+		Send:        make(chan []byte, 256),
 	}, nil
 }
 
@@ -50,7 +50,7 @@ func (c *Client) ReadPump(msgHandleFunc HandlerFunc) {
 	c.Connection.SetReadLimit(maxMessageSize)
 	err := c.Connection.SetReadDeadline(time.Now().Add(pongWait))
 	if err != nil {
-		log.Printf("failed to set read deadline %v", err)
+		log.Printf("failed to set read deadline 11111 %v", err)
 	}
 	c.Connection.SetPongHandler(func(string) error {
 		err := c.Connection.SetReadDeadline(time.Now().Add(pongWait))
@@ -79,10 +79,10 @@ func (c *Client) WritePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		err := c.Connection.Close()
-		if err != nil {
-			log.Printf("failed to close connection %v", err)
-		}
+		_ = c.Connection.Close()
+		//if err != nil {
+		//	log.Printf("failed to close connection 222222 %v", err)
+		//}
 	}()
 	for {
 		select {

@@ -94,18 +94,6 @@ func (s *service) CreateRoom(ctx context.Context, roomName string) (*Room, error
 		return nil, err
 	}
 
-	//userEntity, _ := user2.MapToEntity(u)
-	//userEntity.SetRoom(&roomName)
-	//userEntity.SetFreeStatus(true)
-	//
-	//userDto := user2.MapToDTO(userEntity)
-	//
-	//err = s.userSvc.UpdateUser(ctx, userDto)
-	//if err != nil {
-	//	s.logger.Errorf("failed to update user %v", err)
-	//	return nil, err
-	//}
-
 	return room, nil
 }
 

@@ -82,49 +82,9 @@ func (s *service) GetFreeUser(ctx context.Context, userId string) (*DTO, error) 
 	}
 
 	rand.Seed(time.Now().Unix())
+	randomUser := users[rand.Intn(len(users))]
 
-	return MapToDTO(users[rand.Intn(len(users))]), nil
-
-	//user, err := s.repository.GetFreeUser(ctx)
-	//if err != nil {
-	//	s.logger.Errorf("failed to get user: %v", err)
-	//	return nil, err
-	//}
-	//
-	//userCtxValue := ctx.Value(contextKey("user"))
-	//if userCtxValue == nil {
-	//	s.logger.Error("Not authenticated")
-	//	return nil, errors.New("not authenticated")
-	//}
-	//
-	//ctxUserDto := userCtxValue.(DTO)
-	//
-	//ctxUserEntity, err := MapToEntity(&ctxUserDto)
-	//if err != nil {
-	//	s.logger.Error(err)
-	//	return nil, err
-	//}
-	//
-	//ctxUserEntity.SetRoom(user.RoomName)
-	//
-	//// update support
-	//err = s.UpdateUser(ctx, MapToDTO(ctxUserEntity))
-	//if err != nil {
-	//	s.logger.Error(err)
-	//	return nil, ErrFailedUpdateUser
-	//}
-	//
-	//// update user
-	//user.SetFreeStatus(false)
-	//err = s.UpdateUser(ctx, MapToDTO(user))
-	//if err != nil {
-	//	s.logger.Error(err)
-	//	return nil, ErrFailedUpdateUser
-	//}
-	//
-	//user.RemovePassword()
-	//
-	//return MapToDTO(user), nil
+	return MapToDTO(randomUser), nil
 }
 
 func (s *service) CreateUser(ctx context.Context, fingerprint string) (*DTO, error) {

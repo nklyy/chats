@@ -1,11 +1,8 @@
 package chat
 
 import (
-	"context"
 	"encoding/json"
 	"noname-realtime-support-chat/internal/chat/room"
-	"noname-realtime-support-chat/internal/chat/user"
-	"time"
 )
 
 func (s *service) messageHandler(jsonMessage []byte) {
@@ -17,107 +14,47 @@ func (s *service) messageHandler(jsonMessage []byte) {
 
 	switch message.Action {
 	case "publish-room":
-		dbUser, err := s.userSvc.GetUserByFingerprint(context.Background(), message.Fingerprint)
-		if err != nil {
-			s.logger.Errorf("failed to get user %v", err)
-		}
-
-		dbRoom, err := s.roomSvc.GetRoomByName(context.Background(), *dbUser.RoomName)
-		if err != nil {
-			s.logger.Errorf("failed to get room %v", err)
+		var serverUser *room.Client
+		for client := range s.clients {
+			if client.Fingerprint == message.Fingerprint {
+				serverUser = client
+			}
 		}
 
 		for r := range s.rooms {
-			if r.Name == *dbUser.RoomName {
-				var msg []*room.RoomMessage
-
-				if dbRoom.Messages == nil {
-					msg = append(msg, &room.RoomMessage{
-						Id:      dbUser.ID,
-						Time:    time.Now(),
-						Message: message.Message,
-					})
-				} else {
-					msg = append(*dbRoom.Messages, &room.RoomMessage{
-						Id:      dbUser.ID,
-						Time:    time.Now(),
-						Message: message.Message,
-					})
-				}
-				dbRoom.Messages = &msg
-
-				////////
-				err := s.roomSvc.UpdateRoom(context.Background(), dbRoom)
-				if err != nil {
-
-					r.Broadcast <- &room.BroadcastMessage{
-						Action: message.Action,
-						Message: room.MessageResponse{
-							Action:  "",
-							Message: nil,
-							From:    "",
-							Error:   "failed update room",
-						},
-						RoomName: *dbUser.RoomName,
-					}
-				}
-
+			if r.Name == serverUser.Room.Name {
 				r.Broadcast <- &room.BroadcastMessage{
 					Action: message.Action,
 					Message: room.MessageResponse{
 						Action:  message.Action,
 						Message: &message.Message,
-						From:    dbUser.ID,
+						From:    message.Fingerprint,
 						Error:   nil,
 					},
-					RoomName: *dbUser.RoomName,
+					RoomName: serverUser.Room.Name,
 				}
 			}
 		}
 	case "disconnect":
-		dbUser, err := s.userSvc.GetUserByFingerprint(context.Background(), message.Fingerprint)
-		if err != nil {
-			s.logger.Errorf("failed to get user %v", err)
+		var serverUser *room.Client
+		for client := range s.clients {
+			if client.Fingerprint == message.Fingerprint {
+				serverUser = client
+			}
 		}
 
 		for r := range s.rooms {
-			if r.Name == *dbUser.RoomName {
-				for client := range r.Clients {
-					rUser, err := s.userSvc.GetUserById(context.Background(), client.Id)
-					if err != nil {
-						s.logger.Errorf("failed to get user %v", err)
-					}
-
-					userEntity, _ := user.MapToEntity(rUser)
-					userEntity.SetRoom(nil)
-					err = s.userSvc.UpdateUser(context.Background(), user.MapToDTO(userEntity))
-					if err != nil {
-						msg, _ := s.encodeMessage(room.MessageResponse{
-							Action:  "",
-							Message: nil,
-							From:    "",
-							Error:   "failed update user",
-						})
-						client.Send <- msg
-						return
-					}
-
-					close(client.Send)
-					err = client.Connection.Close()
-					if err != nil {
-						s.logger.Errorf("failed close connection %v", err)
-					}
+			if r.Name == serverUser.Room.Name {
+				for roomClient := range r.Clients {
+					//roomClient.Room = nil
+					//close(roomClient.Send)
+					roomClient.Connection.Close()
 
 					for serverClient := range s.clients {
-						if serverClient.Id == client.Id {
-							delete(s.clients, client)
+						if serverClient.Fingerprint == roomClient.Fingerprint {
+							delete(s.clients, roomClient)
 						}
 					}
-				}
-
-				err := s.roomSvc.DeleteRoom(context.Background(), r.Name)
-				if err != nil {
-					s.logger.Errorf("failed ddelete room %v", err)
 				}
 				delete(s.rooms, r)
 			}
