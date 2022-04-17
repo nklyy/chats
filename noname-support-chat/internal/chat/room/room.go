@@ -6,7 +6,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-support-chat/pkg/errors"
 )
 
 type Room struct {

@@ -4,7 +4,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
 	"log"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-one-time-session-chat/pkg/errors"
 	"time"
 )
 

@@ -3,8 +3,8 @@ package user_test
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"noname-realtime-support-chat/internal/user"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-support-chat/internal/user"
+	"noname-support-chat/pkg/errors"
 
 	"testing"
 )

@@ -4,9 +4,9 @@ import (
 	gerrors "errors"
 	"github.com/go-chi/chi/v5"
 	"net/http"
-	"noname-realtime-support-chat/internal/user"
-	"noname-realtime-support-chat/pkg/errors"
-	"noname-realtime-support-chat/pkg/respond"
+	"noname-support-chat/internal/user"
+	"noname-support-chat/pkg/errors"
+	"noname-support-chat/pkg/respond"
 )
 
 type Handler struct {

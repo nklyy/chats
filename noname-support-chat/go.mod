@@ -1,4 +1,4 @@
-module noname-realtime-support-chat
+module noname-support-chat
 
 // +heroku goVersion go1.17
 go 1.17

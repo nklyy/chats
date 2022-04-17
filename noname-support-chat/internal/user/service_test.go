@@ -7,9 +7,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/user"
-	mock_user "noname-realtime-support-chat/internal/user/mocks"
-	"noname-realtime-support-chat/pkg/logger"
+	"noname-support-chat/internal/user"
+	mock_user "noname-support-chat/internal/user/mocks"
+	"noname-support-chat/pkg/logger"
 
 	"testing"
 )

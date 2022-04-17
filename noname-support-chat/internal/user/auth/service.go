@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/user"
-	"noname-realtime-support-chat/pkg/jwt"
+	"noname-support-chat/internal/user"
+	"noname-support-chat/pkg/jwt"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go

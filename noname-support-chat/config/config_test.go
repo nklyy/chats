@@ -1,7 +1,7 @@
 package config_test
 
 import (
-	"noname-realtime-support-chat/config"
+	"noname-support-chat/config"
 	"os"
 	"reflect"
 	"testing"

@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"golang.org/x/crypto/scrypt"
-	"noname-realtime-support-chat/internal/chat/room"
+	"noname-one-time-session-chat/internal/chat/room"
 )
 
 func (s *service) encodeMessage(msg room.MessageResponse) ([]byte, error) {

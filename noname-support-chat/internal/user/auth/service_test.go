@@ -6,12 +6,12 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/user"
-	"noname-realtime-support-chat/internal/user/auth"
-	mock_user "noname-realtime-support-chat/internal/user/mocks"
-	"noname-realtime-support-chat/pkg/jwt"
-	mock_jwt "noname-realtime-support-chat/pkg/jwt/mocks"
-	"noname-realtime-support-chat/pkg/logger"
+	"noname-support-chat/internal/user"
+	"noname-support-chat/internal/user/auth"
+	mock_user "noname-support-chat/internal/user/mocks"
+	"noname-support-chat/pkg/jwt"
+	mock_jwt "noname-support-chat/pkg/jwt/mocks"
+	"noname-support-chat/pkg/logger"
 
 	"testing"
 )

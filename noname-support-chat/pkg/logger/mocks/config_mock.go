@@ -5,7 +5,7 @@
 package mock_logger
 
 import (
-	logger "noname-realtime-support-chat/noname-support-chat/pkg/logger"
+	"noname-support-chat/pkg/logger"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

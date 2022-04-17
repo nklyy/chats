@@ -3,7 +3,7 @@ package auth
 import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-support-chat/pkg/errors"
 	"strings"
 	"unicode"
 )

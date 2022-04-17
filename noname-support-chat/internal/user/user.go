@@ -3,7 +3,7 @@ package user
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-support-chat/pkg/errors"
 	"time"
 )
 

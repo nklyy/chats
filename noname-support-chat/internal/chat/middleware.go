@@ -5,10 +5,10 @@ import (
 	gerrors "errors"
 	"go.uber.org/zap"
 	"net/http"
-	"noname-realtime-support-chat/internal/user"
-	"noname-realtime-support-chat/pkg/errors"
-	"noname-realtime-support-chat/pkg/jwt"
-	"noname-realtime-support-chat/pkg/respond"
+	"noname-support-chat/internal/user"
+	"noname-support-chat/pkg/errors"
+	"noname-support-chat/pkg/jwt"
+	"noname-support-chat/pkg/respond"
 )
 
 //go:generate mockgen -source=middleware.go -destination=mocks/middleware_mock.go

@@ -5,8 +5,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"noname-realtime-support-chat/pkg/errors"
-	"noname-realtime-support-chat/pkg/respond"
+	"noname-one-time-session-chat/pkg/errors"
+	"noname-one-time-session-chat/pkg/respond"
 )
 
 var upgrader = websocket.Upgrader{

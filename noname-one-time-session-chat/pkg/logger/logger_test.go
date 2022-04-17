@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"noname-realtime-support-chat/pkg/logger"
+	"noname-one-time-session-chat/pkg/logger"
 	"testing"
 )
 

@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"noname-realtime-support-chat/pkg/codes"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-support-chat/pkg/codes"
+	"noname-support-chat/pkg/errors"
 )
 
 const (

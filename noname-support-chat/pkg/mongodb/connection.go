@@ -6,7 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
-	"noname-realtime-support-chat/config"
+	"noname-support-chat/config"
 	"time"
 )
 

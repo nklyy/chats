@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"math/rand"
-	"noname-realtime-support-chat/internal/chat/room"
+	"noname-one-time-session-chat/internal/chat/room"
 	"time"
 )
 

@@ -4,7 +4,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"noname-realtime-support-chat/pkg/jwt"
+	"noname-support-chat/pkg/jwt"
 	"testing"
 )
 

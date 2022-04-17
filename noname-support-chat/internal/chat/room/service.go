@@ -5,7 +5,7 @@ import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
-	"noname-realtime-support-chat/internal/user"
+	"noname-support-chat/internal/user"
 )
 
 //go:generate mockgen -source=service.go -destination=mocks/service_mock.go

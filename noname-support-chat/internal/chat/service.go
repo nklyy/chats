@@ -9,9 +9,9 @@ import (
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 	"log"
-	"noname-realtime-support-chat/internal/chat/room"
-	"noname-realtime-support-chat/internal/user"
-	"noname-realtime-support-chat/pkg/jwt"
+	"noname-support-chat/internal/chat/room"
+	"noname-support-chat/internal/user"
+	"noname-support-chat/pkg/jwt"
 	"time"
 )
 

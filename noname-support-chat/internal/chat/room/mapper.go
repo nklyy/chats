@@ -2,7 +2,7 @@ package room
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-support-chat/pkg/errors"
 )
 
 func MapToDTO(r *Model) *DTO {

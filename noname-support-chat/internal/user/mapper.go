@@ -2,7 +2,7 @@ package user
 
 import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-support-chat/pkg/errors"
 )
 
 func MapToDTO(u *User) *DTO {

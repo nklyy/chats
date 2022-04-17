@@ -6,7 +6,7 @@ package mock_jwt
 
 import (
 	context "context"
-	jwt "noname-realtime-support-chat/noname-support-chat/pkg/jwt"
+	"noname-support-chat/pkg/jwt"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

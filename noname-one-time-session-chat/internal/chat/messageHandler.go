@@ -3,7 +3,7 @@ package chat
 import (
 	"context"
 	"encoding/json"
-	"noname-realtime-support-chat/internal/chat/room"
+	"noname-one-time-session-chat/internal/chat/room"
 )
 
 func (s *service) messageHandler(jsonMessage []byte) {

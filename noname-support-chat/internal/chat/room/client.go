@@ -3,8 +3,8 @@ package room
 import (
 	"github.com/gorilla/websocket"
 	"log"
+	"noname-support-chat/pkg/errors"
 
-	"noname-realtime-support-chat/pkg/errors"
 	"time"
 )
 

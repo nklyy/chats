@@ -1,8 +1,8 @@
 package room
 
 import (
-	"noname-realtime-support-chat/pkg/codes"
-	"noname-realtime-support-chat/pkg/errors"
+	"noname-one-time-session-chat/pkg/codes"
+	"noname-one-time-session-chat/pkg/errors"
 )
 
 const (
