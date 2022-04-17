@@ -56,7 +56,10 @@ func (s *service) messageHandler(jsonMessage []byte) {
 					}
 
 					//roomClient.PubSub.Close()
-					roomClient.Connection.Close()
+					err = roomClient.Connection.Close()
+					if err != nil {
+						s.logger.Errorf("failed to close room client connection %v", err)
+					}
 
 					for serverClient := range s.clients {
 						if serverClient.Fingerprint == roomClient.Fingerprint {
