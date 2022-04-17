@@ -9,9 +9,9 @@ on:
       - master
 
 jobs:
-  build:
+  build-session-chat:
     runs-on: ubuntu-latest
-    name: Build
+    name: Build session chat
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -22,31 +22,84 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build server
-        run: make build
+        run: |
+          cd noname-one-time-session-chat
+          make build
 
-  linter:
+  build-support-chat:
     runs-on: ubuntu-latest
-    name: Run linter
+    name: Build support chat
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build server
+        run: |
+          cd noname-support-chat
+          make build
+
+  linter-sesion-chat:
+    runs-on: ubuntu-latest
+    name: Run linter sesion chat
     needs:
-      - build
+      - build-session-chat
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Run linter
-        run: make lint
+        run: |
+          cd noname-one-time-session-chat
+          make lint
 
-  test:
+  linter-support-chat:
     runs-on: ubuntu-latest
-    name: Run tests
+    name: Run linter support chat
     needs:
-      - linter
+      - build-support-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run linter
+        run: |
+          cd noname-support-chat
+          make lint
+
+  test-session-chat:
+    runs-on: ubuntu-latest
+    name: Run tests session chat
+    needs:
+      - linter-sesion-chat
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Run test
         run: |
+          cd noname-one-time-session-chat
+          export PATH=$PATH:$(go env GOPATH)/bin
+          chmod +x env.sh
+          ./env.sh
+          make test
+
+  test-support-chat:
+    runs-on: ubuntu-latest
+    name: Run tests support chat
+    needs:
+      - linter-support-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run test
+        run: |
+          cd noname-support-chat
           export PATH=$PATH:$(go env GOPATH)/bin
           chmod +x env.sh
           ./env.sh
