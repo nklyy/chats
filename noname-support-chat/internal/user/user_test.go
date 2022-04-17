@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"noname-realtime-support-chat/internal/user"
 	"noname-realtime-support-chat/pkg/errors"
+
 	"testing"
 )
 

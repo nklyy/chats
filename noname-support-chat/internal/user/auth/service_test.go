@@ -9,9 +9,10 @@ import (
 	"noname-realtime-support-chat/internal/user"
 	"noname-realtime-support-chat/internal/user/auth"
 	mock_user "noname-realtime-support-chat/internal/user/mocks"
-	jwt "noname-realtime-support-chat/pkg/jwt"
-	"noname-realtime-support-chat/pkg/jwt/mocks"
+	"noname-realtime-support-chat/pkg/jwt"
+	mock_jwt "noname-realtime-support-chat/pkg/jwt/mocks"
 	"noname-realtime-support-chat/pkg/logger"
+
 	"testing"
 )
 

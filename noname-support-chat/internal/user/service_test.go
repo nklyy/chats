@@ -4,10 +4,13 @@ import (
 	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 	"noname-realtime-support-chat/internal/user"
 	mock_user "noname-realtime-support-chat/internal/user/mocks"
 	"noname-realtime-support-chat/pkg/logger"
+
 	"testing"
 )
 
@@ -106,7 +109,8 @@ func TestService_GetUserById(t *testing.T) {
 			id:           userDTO.ID,
 			withPassword: false,
 			setup: func(ctx context.Context, id string) {
-				mockRepo.EXPECT().GetUserById(ctx, id).Return(userEntity, nil)
+				objId, _ := primitive.ObjectIDFromHex(id)
+				mockRepo.EXPECT().GetUser(ctx, bson.M{"_id": objId}).Return(userEntity, nil)
 			},
 			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.NotNil(t, dto)
@@ -117,10 +121,11 @@ func TestService_GetUserById(t *testing.T) {
 		{
 			name:         "should return not found",
 			ctx:          context.Background(),
-			id:           "incorrect_id",
+			id:           userDTO.ID,
 			withPassword: false,
 			setup: func(ctx context.Context, id string) {
-				mockRepo.EXPECT().GetUserById(ctx, id).Return(nil, user.ErrNotFound)
+				objId, _ := primitive.ObjectIDFromHex(id)
+				mockRepo.EXPECT().GetUser(ctx, bson.M{"_id": objId}).Return(nil, user.ErrNotFound)
 			},
 			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.Nil(t, dto)
@@ -167,7 +172,7 @@ func TestService_GetUserByEmail(t *testing.T) {
 			email:        "email",
 			withPassword: false,
 			setup: func(ctx context.Context, email string) {
-				mockRepo.EXPECT().GetUserByEmail(ctx, email).Return(userEntity, nil)
+				mockRepo.EXPECT().GetUser(ctx, bson.M{"email": email}).Return(userEntity, nil)
 			},
 			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.NotNil(t, dto)
@@ -181,7 +186,7 @@ func TestService_GetUserByEmail(t *testing.T) {
 			email:        "email",
 			withPassword: false,
 			setup: func(ctx context.Context, email string) {
-				mockRepo.EXPECT().GetUserByEmail(ctx, email).Return(nil, user.ErrNotFound)
+				mockRepo.EXPECT().GetUser(ctx, bson.M{"email": email}).Return(nil, user.ErrNotFound)
 			},
 			expect: func(t *testing.T, dto *user.DTO, err error) {
 				assert.Nil(t, dto)

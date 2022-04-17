@@ -41,7 +41,7 @@ services:
 
   backend:
     build:
-      context: ../noname-realtime-support-chat
+      context: ..
       dockerfile: Dockerfile
     container_name: chat-backend
     restart: on-failure

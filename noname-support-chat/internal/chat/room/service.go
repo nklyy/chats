@@ -3,6 +3,7 @@ package room
 import (
 	"context"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 	"noname-realtime-support-chat/internal/user"
 )
@@ -37,7 +38,7 @@ func NewService(repository Repository, userSvc user.Service, logger *zap.Sugared
 }
 
 func (s *service) GetRoomByName(ctx context.Context, name string) (*DTO, error) {
-	room, err := s.repository.GetRoomByName(ctx, name)
+	room, err := s.repository.GetRoom(ctx, bson.M{"name": name})
 	if err != nil {
 		s.logger.Errorf("failed to get room: %v", err)
 		return nil, err
@@ -47,7 +48,7 @@ func (s *service) GetRoomByName(ctx context.Context, name string) (*DTO, error) 
 }
 
 func (s *service) GetRoomWithFormatMessages(ctx context.Context, name, userId string) ([]*FormatMessages, error) {
-	room, err := s.repository.GetRoomByName(ctx, name)
+	room, err := s.repository.GetRoom(ctx, bson.M{"name": name})
 	if err != nil {
 		s.logger.Errorf("failed to get room: %v", err)
 		return nil, err

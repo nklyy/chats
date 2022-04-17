@@ -7,7 +7,8 @@ import (
 	"noname-realtime-support-chat/internal/user"
 	mock_user "noname-realtime-support-chat/internal/user/mocks"
 	"noname-realtime-support-chat/pkg/jwt"
-	"noname-realtime-support-chat/pkg/jwt/mocks"
+	mock_jwt "noname-realtime-support-chat/pkg/jwt/mocks"
+
 	"testing"
 )
 

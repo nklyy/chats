@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 	"errors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.uber.org/zap"
 )
 
@@ -36,21 +38,22 @@ func NewService(repository Repository, logger *zap.SugaredLogger, salt *int) (Se
 }
 
 func (s *service) GetUserById(ctx context.Context, id string, withPassword bool) (*DTO, error) {
-	user, err := s.repository.GetUserById(ctx, id)
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := s.repository.GetUser(ctx, bson.M{"_id": objId})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
 	}
 
-	if !withPassword {
-		user.RemovePassword()
-	}
-
 	return MapToDTO(user), nil
 }
 
-func (s *service) GetUserByEmail(ctx context.Context, id string, withPassword bool) (*DTO, error) {
-	user, err := s.repository.GetUserByEmail(ctx, id)
+func (s *service) GetUserByEmail(ctx context.Context, email string, withPassword bool) (*DTO, error) {
+	user, err := s.repository.GetUser(ctx, bson.M{"email": email})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
@@ -64,11 +67,17 @@ func (s *service) GetUserByEmail(ctx context.Context, id string, withPassword bo
 }
 
 func (s *service) GetFreeUser(ctx context.Context) (*DTO, error) {
-	user, err := s.repository.GetFreeUser(ctx)
+	users, err := s.repository.GetUsers(ctx, bson.M{"support": bson.M{"$eq": false}, "free": bson.M{"$eq": true}, "roomName": bson.M{"$ne": nil}})
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
 	}
+
+	if len(users) == 0 {
+		return nil, ErrNoUsersYet
+	}
+
+	user := users[0]
 
 	userCtxValue := ctx.Value(contextKey("user"))
 	if userCtxValue == nil {

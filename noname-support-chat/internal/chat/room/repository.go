@@ -11,7 +11,7 @@ import (
 
 //go:generate mockgen -source=repository.go -destination=mocks/repository_mock.go
 type Repository interface {
-	GetRoomByName(ctx context.Context, id string) (*Model, error)
+	GetRoom(ctx context.Context, filters bson.M) (*Model, error)
 	CreateRoom(ctx context.Context, room *Model) (string, error)
 	UpdateRoom(ctx context.Context, model *Model) error
 	DeleteRoom(ctx context.Context, name string) error
@@ -37,16 +37,16 @@ func NewRepository(db *mongo.Client, dbName string, logger *zap.SugaredLogger) (
 	return &repository{db: db, dbName: dbName, logger: logger}, nil
 }
 
-func (r *repository) GetRoomByName(ctx context.Context, name string) (*Model, error) {
+func (r *repository) GetRoom(ctx context.Context, filters bson.M) (*Model, error) {
 	var room Model
 
-	if err := r.db.Database(r.dbName).Collection("rooms").FindOne(ctx, bson.M{"name": name}).Decode(&room); err != nil {
+	if err := r.db.Database(r.dbName).Collection("rooms").FindOne(ctx, filters).Decode(&room); err != nil {
 		if err == mongo.ErrNoDocuments {
-			r.logger.Errorf("unable to find room by name '%s': %v", name, err)
+			r.logger.Errorf("unable to find room by name %v", err)
 			return nil, ErrNotFound
 		}
 
-		r.logger.Errorf("unable to find room due to internal error: %v; name: %s", err, name)
+		r.logger.Errorf("unable to find room due to internal error: %v", err)
 		return nil, err
 	}
 
