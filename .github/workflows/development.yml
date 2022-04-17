@@ -1,0 +1,106 @@
+name: development
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-session-chat:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build server
+        run: |
+          cd noname-one-time-session-chat
+          make build
+
+  build-support-chat:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build server
+        run: |
+          cd noname-support-chat
+          make build
+
+  linter-sesion-chat:
+    runs-on: ubuntu-latest
+    name: Run linter
+    needs:
+      - build-session-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run linter
+        run: |
+          cd noname-one-time-session-chat
+          make lint
+
+  linter-support-chat:
+    runs-on: ubuntu-latest
+    name: Run linter
+    needs:
+      - build-support-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run linter
+        run: |
+          cd noname-support-chat
+          make lint
+
+  test-session-chat:
+    runs-on: ubuntu-latest
+    name: Run tests
+    needs:
+      - linter-sesion-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run test
+        run: |
+          cd noname-one-time-session-chat
+          export PATH=$PATH:$(go env GOPATH)/bin
+          chmod +x env.sh
+          ./env.sh
+          make test
+
+  test-support-chat:
+    runs-on: ubuntu-latest
+    name: Run tests
+    needs:
+      - linter-support-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run test
+        run: |
+          cd noname-support-chat
+          export PATH=$PATH:$(go env GOPATH)/bin
+          chmod +x env.sh
+          ./env.sh
+          make test
