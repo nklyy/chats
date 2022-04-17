@@ -1,0 +1,76 @@
+version: '3.9'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: chat-mongodb
+    restart: on-failure
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
+    volumes:
+      - ./data/mongo/.mongodb-tmp:/data/db
+    networks:
+      - chat
+
+  redisAuth:
+    image: redis:latest
+    container_name: chat-redis-auth
+    restart: on-failure
+    command:
+      - --port ${REDIS_PORT_AUTH}
+    ports:
+      - ${REDIS_PORT_AUTH}:${REDIS_PORT_AUTH}
+    volumes:
+      - ./data/redis-auth:/data
+    networks:
+      - chat
+
+  redisChat:
+    image: redis:latest
+    container_name: chat-redis
+    restart: on-failure
+    command:
+      - --port ${REDIS_PORT_CHAT}
+    ports:
+      - ${REDIS_PORT_CHAT}:${REDIS_PORT_CHAT}
+    volumes:
+      - ./data/redis-chat:/data
+    networks:
+      - chat
+
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: chat-backend
+    restart: on-failure
+    depends_on:
+      - mongodb
+      - redisAuth
+      - redisChat
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+#    volumes:
+#      - ./data/app:/build
+
+    environment:
+      - PORT=${APP_PORT}
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MONGO_DB_URL=mongodb://chat-mongodb:${MONGO_PORT}/${MONGO_DB_NAME}
+      - JWT_SECRET_ACCESS=${JWT_SECRET_ACCESS}
+      - JWT_EXPIRY_ACCESS=${JWT_EXPIRY_ACCESS}
+      - JWT_SECRET_REFRESH=${JWT_SECRET_REFRESH}
+      - JWT_EXPIRY_REFRESH=${JWT_EXPIRY_REFRESH}
+      - AUTO_LOGOUT=${AUTO_LOGOUT}
+      - SALT=${SALT}
+      - REDIS_HOST_AUTH=chat-redis-auth
+      - REDIS_PORT_AUTH=${REDIS_PORT_AUTH}
+      - REDIS_HOST_CHAT=chat-redis
+      - REDIS_PORT_CHAT=${REDIS_PORT_CHAT}
+    networks:
+      - chat
+
+networks:
+  chat:
+    driver: bridge
