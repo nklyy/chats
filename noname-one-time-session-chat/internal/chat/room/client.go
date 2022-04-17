@@ -1,6 +1,7 @@
 package room
 
 import (
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
 	"log"
 	"noname-realtime-support-chat/pkg/errors"
@@ -26,6 +27,7 @@ type Client struct {
 	Room        *Room           `json:"room"`
 	Connection  *websocket.Conn `json:"connection"`
 	Send        chan []byte     `json:"send"`
+	PubSub      *redis.PubSub   `json:"pub_sub"`
 }
 
 func NewClient(fingerprint string, conn *websocket.Conn) (*Client, error) {
@@ -41,6 +43,7 @@ func NewClient(fingerprint string, conn *websocket.Conn) (*Client, error) {
 		Room:        nil,
 		Connection:  conn,
 		Send:        make(chan []byte, 256),
+		PubSub:      nil,
 	}, nil
 }
 

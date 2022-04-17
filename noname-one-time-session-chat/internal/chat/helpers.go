@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"golang.org/x/crypto/scrypt"
@@ -32,10 +33,15 @@ func (s *service) cleanupOldConnections(userFingerprint string) {
 				for rm := range s.rooms {
 					if rm.Name == client.Room.Name {
 						for roomClient := range rm.Clients {
+							err := roomClient.PubSub.Unsubscribe(context.Background(), roomClient.Room.Name)
+							if err != nil {
+								s.logger.Errorf("failed unsubscrube from channel %v", err)
+							}
+
+							//roomClient.PubSub.Close()
 							roomClient.Connection.Close()
 							delete(s.clients, roomClient)
 						}
-
 						delete(s.rooms, rm)
 					}
 				}

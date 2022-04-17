@@ -29,8 +29,8 @@ func NewRoom(name string) (*Room, error) {
 	}, nil
 }
 
-func (r *Room) RunRoom(redis *redis.Client) {
-	go r.subscribeToRoomMessages(redis)
+func (r *Room) RunRoom(redis *redis.Client, client, freeClient *Client) {
+	go r.subscribeToRoomMessages(redis, client, freeClient)
 
 	for {
 		//select {
@@ -57,9 +57,11 @@ func (r *Room) broadcastToClientsInRoom(message []byte) {
 	}
 }
 
-func (r *Room) subscribeToRoomMessages(redis *redis.Client) {
+func (r *Room) subscribeToRoomMessages(redis *redis.Client, client, freeClient *Client) {
 	pubsub := redis.Subscribe(context.Background(), r.Name)
 
+	client.PubSub = pubsub
+	freeClient.PubSub = pubsub
 	ch := pubsub.Channel()
 
 	for msg := range ch {

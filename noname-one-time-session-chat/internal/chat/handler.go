@@ -40,7 +40,7 @@ func (h *Handler) Chat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.chatSvc.Chat(r.Context(), fingerprint, ws)
+	err = h.chatSvc.Chat(fingerprint, ws)
 	if err != nil {
 		respond.Respond(w, http.StatusInternalServerError, errors.NewInternal(err.Error()))
 		return

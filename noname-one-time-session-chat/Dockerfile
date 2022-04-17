@@ -6,7 +6,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 
-COPY . .
+COPY .. .
 
 ENV APP_ENV=production
 RUN go build -o ./cmd/main ./cmd/main.go

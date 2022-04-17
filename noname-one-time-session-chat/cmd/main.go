@@ -11,10 +11,8 @@ import (
 	"noname-realtime-support-chat/config"
 	"noname-realtime-support-chat/internal/chat"
 	"noname-realtime-support-chat/internal/chat/room"
-	"noname-realtime-support-chat/internal/chat/user"
 	"noname-realtime-support-chat/internal/health"
 	"noname-realtime-support-chat/pkg/logger"
-	"noname-realtime-support-chat/pkg/mongodb"
 	"noname-realtime-support-chat/pkg/redis"
 	"os"
 	"syscall"
@@ -52,20 +50,6 @@ func main() {
 		}
 	}
 
-	// Connect to database
-	db, ctx, cancel, err := mongodb.NewConnection(cfg)
-	if err != nil {
-		zapLogger.Fatalf("failed to connect to mongodb: %v", err)
-	}
-	defer mongodb.Close(db, ctx, cancel)
-
-	// Ping db
-	err = mongodb.Ping(db, ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	zapLogger.Info("DB connected successfully")
-
 	// Redis
 	redisChatClient, err := redis.NewClient(cfg.RedisHost, cfg.RedisPort)
 	if err != nil {
@@ -73,29 +57,13 @@ func main() {
 	}
 	zapLogger.Info("Redis(chat) connected successfully")
 
-	// Repositories
-	userRepository, err := user.NewRepository(db, cfg.MongoDbName, zapLogger)
-	if err != nil {
-		zapLogger.Fatalf("failde to create user repository: %v", err)
-	}
-
-	roomRepository, err := room.NewRepository(db, cfg.MongoDbName, zapLogger)
-	if err != nil {
-		zapLogger.Fatalf("failed to set up room repository %v", err)
-	}
-
 	// Services
-	userService, err := user.NewService(userRepository, zapLogger, cfg.Salt)
-	if err != nil {
-		zapLogger.Fatalf("failde to create user service: %v", err)
-	}
-
-	roomService, err := room.NewService(roomRepository, userService, zapLogger)
+	roomService, err := room.NewService(zapLogger)
 	if err != nil {
 		zapLogger.Fatalf("failed to set up room service %v", err)
 	}
 
-	chatService, err := chat.NewService(redisChatClient, roomService, userService, cfg.Salt, zapLogger)
+	chatService, err := chat.NewService(redisChatClient, roomService, cfg.Salt, zapLogger)
 	if err != nil {
 		zapLogger.Fatalf("failed to set up chat service %v", err)
 	}
@@ -106,7 +74,7 @@ func main() {
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"OPTIONS", "GET", "POST", "PATCH", "DELETE"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Access-Control-Allow-Origin", "X-Forwarded-For"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Access-Control-Allow-Origin"},
 		ExposedHeaders:   []string{"Content-Type", "JWT-Token"},
 		AllowCredentials: false,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
@@ -120,16 +88,9 @@ func main() {
 		zapLogger.Fatalf("failed to set up chat handler %v", err)
 	}
 
-	//roomHandler, err := room.NewHandler(roomService)
-	//if err != nil {
-	//	zapLogger.Fatalf("failed to set up room handler %v", err)
-	//}
-
 	// Routes
 	router.Route("/api/v1", func(r chi.Router) {
 		healthHandler.SetupRoutes(r)
-		//roomHandler.SetupRoutes(r)
-		//chatHandler.SetupRoutes(r)
 	})
 
 	router.Route("/", func(r chi.Router) {

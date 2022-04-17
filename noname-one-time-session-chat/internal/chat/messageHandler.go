@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"context"
 	"encoding/json"
 	"noname-realtime-support-chat/internal/chat/room"
 )
@@ -48,6 +49,13 @@ func (s *service) messageHandler(jsonMessage []byte) {
 				for roomClient := range r.Clients {
 					//roomClient.Room = nil
 					//close(roomClient.Send)
+
+					err := roomClient.PubSub.Unsubscribe(context.Background(), roomClient.Room.Name)
+					if err != nil {
+						s.logger.Errorf("failed unsubscrube from channel %v", err)
+					}
+
+					//roomClient.PubSub.Close()
 					roomClient.Connection.Close()
 
 					for serverClient := range s.clients {
