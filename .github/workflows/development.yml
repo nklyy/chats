@@ -11,7 +11,7 @@ on:
 jobs:
   build-session-chat:
     runs-on: ubuntu-latest
-    name: Build
+    name: Build session chat
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -28,7 +28,7 @@ jobs:
 
   build-support-chat:
     runs-on: ubuntu-latest
-    name: Build
+    name: Build support chat
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -45,7 +45,7 @@ jobs:
 
   linter-sesion-chat:
     runs-on: ubuntu-latest
-    name: Run linter
+    name: Run linter sesion chat
     needs:
       - build-session-chat
     steps:
@@ -59,7 +59,7 @@ jobs:
 
   linter-support-chat:
     runs-on: ubuntu-latest
-    name: Run linter
+    name: Run linter support chat
     needs:
       - build-support-chat
     steps:
@@ -73,7 +73,7 @@ jobs:
 
   test-session-chat:
     runs-on: ubuntu-latest
-    name: Run tests
+    name: Run tests session chat
     needs:
       - linter-sesion-chat
     steps:
@@ -90,7 +90,7 @@ jobs:
 
   test-support-chat:
     runs-on: ubuntu-latest
-    name: Run tests
+    name: Run tests support chat
     needs:
       - linter-support-chat
     steps:
