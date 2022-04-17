@@ -71,7 +71,7 @@ func (s *service) findServerFreeUser(currentUserFingerprint string) []*room.Clie
 
 func (s *service) findCompanion(client *room.Client) {
 	foundFreeClients := s.findServerFreeUser(client.Fingerprint)
-	if foundFreeClients != nil && len(foundFreeClients) > 0 {
+	if foundFreeClients != nil {
 		rand.Seed(time.Now().Unix())
 		freeClient := foundFreeClients[rand.Intn(len(foundFreeClients))]
 

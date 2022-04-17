@@ -2,9 +2,7 @@ package chat
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
-	"golang.org/x/crypto/scrypt"
 	"noname-one-time-session-chat/internal/chat/room"
 )
 
@@ -15,15 +13,6 @@ func (s *service) encodeMessage(msg room.MessageResponse) ([]byte, error) {
 		return nil, err
 	}
 	return encMsg, err
-}
-
-func (s *service) createHash(data string) (string, error) {
-	hash, err := scrypt.Key([]byte(data), []byte(s.salt), 16384, 8, 1, 32)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(hash), nil
 }
 
 func (s *service) cleanupOldConnections(userFingerprint string) {
@@ -39,7 +28,10 @@ func (s *service) cleanupOldConnections(userFingerprint string) {
 							}
 
 							//roomClient.PubSub.Close()
-							roomClient.Connection.Close()
+							err = roomClient.Connection.Close()
+							if err != nil {
+								s.logger.Errorf("failed to close room client connection %v", err)
+							}
 							delete(s.clients, roomClient)
 						}
 						delete(s.rooms, rm)
@@ -47,7 +39,10 @@ func (s *service) cleanupOldConnections(userFingerprint string) {
 				}
 			}
 
-			client.Connection.Close()
+			err := client.Connection.Close()
+			if err != nil {
+				s.logger.Errorf("failed to close client connection %v", err)
+			}
 			delete(s.clients, client)
 		}
 	}
