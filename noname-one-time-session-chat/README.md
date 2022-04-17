@@ -41,5 +41,3 @@ run-docker
 ```
 
 ***If you want to see front-end part, visit [repository](https://github.com/nn-labs/noname-realtime-support-chat)***
-
-<img src="https://github.com/nn-labs/noname-realtime-support-chat/workflows/development/badge.svg?branch=dev"><br>

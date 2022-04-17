@@ -1,0 +1,1 @@
+<img src="https://github.com/nn-labs/noname-chats/workflows/development/badge.svg?branch=dev"><br>
