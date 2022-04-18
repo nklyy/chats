@@ -49,6 +49,22 @@ func NewService(redisClient *redis.Client, roomSvc room.Service, salt string, lo
 }
 
 func (s *service) Chat(fingerprint string, ws *websocket.Conn) error {
+	if fingerprint == "" || fingerprint == "null" || fingerprint == "undefined" {
+		msg, _ := s.encodeMessage(room.MessageResponse{
+			Action:  "",
+			Message: nil,
+			From:    "",
+			Error:   "invalid fingerprint",
+		})
+
+		err := ws.WriteMessage(1, msg)
+		if err != nil {
+			s.logger.Errorf("failed to write message %v", err)
+		}
+
+		return nil
+	}
+
 	newClient, _ := room.NewClient(fingerprint, ws)
 	go newClient.WritePump()
 	go newClient.ReadPump(s.messageHandler)
