@@ -21,19 +21,15 @@ type service struct {
 	clients     map[*room.Client]bool
 	rooms       map[*room.Room]bool
 	roomSvc     room.Service
-	salt        string
 	logger      *zap.SugaredLogger
 }
 
-func NewService(redisClient *redis.Client, roomSvc room.Service, salt string, logger *zap.SugaredLogger) (Service, error) {
+func NewService(redisClient *redis.Client, roomSvc room.Service, logger *zap.SugaredLogger) (Service, error) {
 	if redisClient == nil {
 		return nil, errors.New("invalid redis chat client")
 	}
 	if roomSvc == nil {
 		return nil, errors.New("invalid room service")
-	}
-	if salt == "" {
-		return nil, errors.New("invalid salt")
 	}
 	if logger == nil {
 		return nil, errors.New("invalid logger")
@@ -43,7 +39,6 @@ func NewService(redisClient *redis.Client, roomSvc room.Service, salt string, lo
 		clients:     make(map[*room.Client]bool),
 		rooms:       make(map[*room.Room]bool),
 		roomSvc:     roomSvc,
-		salt:        salt,
 		logger:      logger,
 	}, nil
 }

@@ -1,17 +1,17 @@
 version: '3.9'
 services:
-#  mongodb:
-#    image: mongo:latest
-#    container_name: chat-mongodb
-#    restart: on-failure
-#    ports:
-#      - ${MONGO_PORT}:${MONGO_PORT}
-#    environment:
-#      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
-#    volumes:
-#      - ./data/mongo/.mongodb-tmp:/data/db
-#    networks:
-#      - chat
+  mongodb:
+    image: mongo:latest
+    container_name: chat-mongodb
+    restart: on-failure
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB_NAME}
+    volumes:
+      - ./data/mongo/.mongodb-tmp:/data/db
+    networks:
+      - chat
 
   redis:
     image: redis:latest
@@ -26,29 +26,28 @@ services:
     networks:
       - chat
 
-#  backend:
-#    build:
-#      context: ../noname-realtime-support-chat
-#      dockerfile: Dockerfile
-#    container_name: chat-backend
-#    restart: on-failure
-#    depends_on:
-#      - mongodb
-#      - redis
-#    ports:
-#      - ${APP_PORT}:${APP_PORT}
-##    volumes:
-##      - ./data/app:/build
-#
-#    environment:
-#      - PORT=${APP_PORT}
-#      - MONGO_DB_NAME=${MONGO_DB_NAME}
-#      - MONGO_DB_URL=mongodb://chat-mongodb:${MONGO_PORT}/${MONGO_DB_NAME}
-#      - SALT=${SALT}
-#      - REDIS_HOST=chat-redis-auth
-#      - REDIS_PORT=${REDIS_PORT_AUTH}
-#    networks:
-#      - chat
+  backend:
+    build:
+      context: ../noname-realtime-support-chat
+      dockerfile: Dockerfile
+    container_name: chat-backend
+    restart: on-failure
+    depends_on:
+      - mongodb
+      - redis
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+#    volumes:
+#      - ./data/app:/build
+
+    environment:
+      - PORT=${APP_PORT}
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MONGO_DB_URL=mongodb://chat-mongodb:${MONGO_PORT}/${MONGO_DB_NAME}
+      - REDIS_HOST=chat-redis-auth
+      - REDIS_PORT=${REDIS_PORT_AUTH}
+    networks:
+      - chat
 
 networks:
   chat:
