@@ -63,7 +63,7 @@ func main() {
 		zapLogger.Fatalf("failed to set up room service %v", err)
 	}
 
-	chatService, err := chat.NewService(redisChatClient, roomService, cfg.Salt, zapLogger)
+	chatService, err := chat.NewService(redisChatClient, roomService, zapLogger)
 	if err != nil {
 		zapLogger.Fatalf("failed to set up chat service %v", err)
 	}
