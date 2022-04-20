@@ -34,13 +34,13 @@ func NewService(redisClient *redis.Client, roomSvc room.Service, jwtSvc jwt.Serv
 	if redisClient == nil {
 		return nil, errors.New("invalid redis chat client")
 	}
-	if jwtSvc == nil {
-		return nil, errors.New("invalid jwt service")
-	}
 	if roomSvc == nil {
 		return nil, errors.New("invalid room service")
 	}
-	if roomSvc == nil {
+	if jwtSvc == nil {
+		return nil, errors.New("invalid jwt service")
+	}
+	if userSvc == nil {
 		return nil, errors.New("invalid user service")
 	}
 	if logger == nil {
