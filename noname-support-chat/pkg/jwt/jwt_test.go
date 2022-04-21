@@ -52,7 +52,7 @@ func TestNewJwtService(t *testing.T) {
 			expect: func(t *testing.T, s jwt.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt access secret key")
+				assert.EqualError(t, err, "[jwt] invalid jwt access secret key")
 			},
 		},
 		{
@@ -66,7 +66,7 @@ func TestNewJwtService(t *testing.T) {
 			expect: func(t *testing.T, s jwt.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt expiry access")
+				assert.EqualError(t, err, "[jwt] invalid jwt expiry access")
 			},
 		},
 		{
@@ -80,7 +80,7 @@ func TestNewJwtService(t *testing.T) {
 			expect: func(t *testing.T, s jwt.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt refresh secret key")
+				assert.EqualError(t, err, "[jwt] invalid jwt refresh secret key")
 			},
 		},
 		{
@@ -94,7 +94,7 @@ func TestNewJwtService(t *testing.T) {
 			expect: func(t *testing.T, s jwt.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt expiry refresh")
+				assert.EqualError(t, err, "[jwt] invalid jwt expiry refresh")
 			},
 		},
 		{
@@ -108,7 +108,7 @@ func TestNewJwtService(t *testing.T) {
 			expect: func(t *testing.T, s jwt.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt auto logout")
+				assert.EqualError(t, err, "[jwt] invalid jwt auto logout")
 			},
 		},
 		{
@@ -122,7 +122,7 @@ func TestNewJwtService(t *testing.T) {
 			expect: func(t *testing.T, s jwt.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid redis client")
+				assert.EqualError(t, err, "[jwt] invalid redis client")
 			},
 		},
 	}

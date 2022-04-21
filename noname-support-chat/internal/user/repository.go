@@ -26,13 +26,13 @@ type repository struct {
 
 func NewRepository(db *mongo.Client, dbName string, logger *zap.SugaredLogger) (Repository, error) {
 	if db == nil {
-		return nil, errors.New("invalid user database")
+		return nil, errors.New("[user_repository] invalid user database")
 	}
 	if dbName == "" {
-		return nil, errors.New("invalid database name")
+		return nil, errors.New("[user_repository] invalid database name")
 	}
 	if logger == nil {
-		return nil, errors.New("invalid logger")
+		return nil, errors.New("[user_repository] invalid logger")
 	}
 
 	return &repository{db: db, dbName: dbName, logger: logger}, nil

@@ -16,7 +16,7 @@ type service struct {
 
 func NewService(logger *zap.SugaredLogger) (Service, error) {
 	if logger == nil {
-		return nil, errors.New("invalid logger")
+		return nil, errors.New("[chat_room_service] invalid logger")
 	}
 
 	return &service{logger: logger}, nil

@@ -32,7 +32,7 @@ func TestNewLogger(t *testing.T) {
 			appEnv: "",
 			expect: func(t *testing.T, l logger.Logger, err error) {
 				assert.NotNil(t, err)
-				assert.Equal(t, err, errors.New("invalid app env"))
+				assert.Equal(t, err, errors.New("[logger] invalid app env"))
 				assert.Nil(t, l)
 			},
 		},

@@ -21,7 +21,7 @@ type Handler struct {
 
 func NewHandler(chatSvc Service) (*Handler, error) {
 	if chatSvc == nil {
-		return nil, gerrors.New("invalid chat service")
+		return nil, gerrors.New("[chat_handler] invalid chat service")
 	}
 
 	return &Handler{chatSvc: chatSvc}, nil

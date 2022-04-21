@@ -14,7 +14,7 @@ type Handler struct {
 
 func NewHandler(userSvc Service) (*Handler, error) {
 	if userSvc == nil {
-		return nil, goErr.New("invalid user service")
+		return nil, goErr.New("[user_handler] invalid user service")
 	}
 
 	return &Handler{userSvc: userSvc}, nil

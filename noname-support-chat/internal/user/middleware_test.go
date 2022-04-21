@@ -41,7 +41,18 @@ func TestNewMiddleware(t *testing.T) {
 			expect: func(t *testing.T, m user.Middleware, err error) {
 				assert.Nil(t, m)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt service")
+				assert.EqualError(t, err, "[user_middleware] invalid jwt service")
+			},
+		},
+		{
+			name:    "should return invalid user service",
+			jwtSvc:  mock_jwt.NewMockService(controller),
+			userSvc: nil,
+			logger:  &zap.SugaredLogger{},
+			expect: func(t *testing.T, m user.Middleware, err error) {
+				assert.Nil(t, m)
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, "[user_middleware] invalid user service")
 			},
 		},
 		{
@@ -52,18 +63,7 @@ func TestNewMiddleware(t *testing.T) {
 			expect: func(t *testing.T, m user.Middleware, err error) {
 				assert.Nil(t, m)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid logger")
-			},
-		},
-		{
-			name:    "should return invalid logger",
-			jwtSvc:  mock_jwt.NewMockService(controller),
-			userSvc: nil,
-			logger:  &zap.SugaredLogger{},
-			expect: func(t *testing.T, m user.Middleware, err error) {
-				assert.Nil(t, m)
-				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid user service")
+				assert.EqualError(t, err, "[user_middleware] invalid logger")
 			},
 		},
 	}

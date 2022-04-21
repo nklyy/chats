@@ -19,19 +19,19 @@ type Service interface {
 
 type service struct {
 	userSvc user.Service
-	logger  *zap.SugaredLogger
 	jwtSvc  jwt.Service
+	logger  *zap.SugaredLogger
 }
 
-func NewService(userSvc user.Service, logger *zap.SugaredLogger, jwtSvc jwt.Service) (Service, error) {
+func NewService(userSvc user.Service, jwtSvc jwt.Service, logger *zap.SugaredLogger) (Service, error) {
 	if userSvc == nil {
-		return nil, errors.New("invalid user service")
-	}
-	if logger == nil {
-		return nil, errors.New("invalid logger")
+		return nil, errors.New("[user_auth_service] invalid user service")
 	}
 	if jwtSvc == nil {
-		return nil, errors.New("invalid jwt service")
+		return nil, errors.New("[user_auth_service] invalid jwt service")
+	}
+	if logger == nil {
+		return nil, errors.New("[user_auth_service] invalid logger")
 	}
 
 	return &service{userSvc: userSvc, logger: logger, jwtSvc: jwtSvc}, nil

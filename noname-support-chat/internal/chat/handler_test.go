@@ -3,8 +3,8 @@ package chat_test
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"noname-one-time-session-chat/internal/chat"
-	mock_chat "noname-one-time-session-chat/internal/chat/mocks"
+	"noname-support-chat/internal/chat"
+	mock_chat "noname-support-chat/internal/chat/mocks"
 	"testing"
 )
 

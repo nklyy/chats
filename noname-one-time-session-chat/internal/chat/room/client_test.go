@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"noname-one-time-session-chat/internal/chat/room"
-	"noname-one-time-session-chat/pkg/errors"
 	"testing"
 )
 
@@ -37,7 +36,7 @@ func TestNewClient(t *testing.T) {
 			expect: func(t *testing.T, s *room.Client, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(room.ErrInvalidFingerprint, "should be not empty").Error())
+				assert.EqualError(t, err, "[chat_room_client] invalid fingerprint")
 			},
 		},
 		{
@@ -47,7 +46,7 @@ func TestNewClient(t *testing.T) {
 			expect: func(t *testing.T, s *room.Client, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(room.ErrInvalidConnection, "should be not empty").Error())
+				assert.EqualError(t, err, "[chat_room_client] invalid connection")
 			},
 		},
 	}

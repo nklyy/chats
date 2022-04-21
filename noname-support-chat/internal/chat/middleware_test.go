@@ -41,7 +41,7 @@ func TestNewMiddleware(t *testing.T) {
 			expect: func(t *testing.T, m chat.Middleware, err error) {
 				assert.Nil(t, m)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt service")
+				assert.EqualError(t, err, "[chat_middleware] invalid jwt service")
 			},
 		},
 		{
@@ -52,7 +52,7 @@ func TestNewMiddleware(t *testing.T) {
 			expect: func(t *testing.T, m chat.Middleware, err error) {
 				assert.Nil(t, m)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid user service")
+				assert.EqualError(t, err, "[chat_middleware] invalid user service")
 			},
 		},
 		{
@@ -63,7 +63,7 @@ func TestNewMiddleware(t *testing.T) {
 			expect: func(t *testing.T, m chat.Middleware, err error) {
 				assert.Nil(t, m)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid logger")
+				assert.EqualError(t, err, "[chat_middleware] invalid logger")
 			},
 		},
 	}

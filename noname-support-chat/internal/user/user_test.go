@@ -4,8 +4,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"noname-support-chat/internal/user"
-	"noname-support-chat/pkg/errors"
-
 	"testing"
 )
 
@@ -43,7 +41,7 @@ func TestNewSupport(t *testing.T) {
 			expect: func(t *testing.T, s *user.User, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(user.ErrInvalidEmail, "should be not empty").Error())
+				assert.EqualError(t, err, "[user] invalid email")
 			},
 		},
 		{
@@ -55,7 +53,7 @@ func TestNewSupport(t *testing.T) {
 			expect: func(t *testing.T, s *user.User, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(user.ErrInvalidName, "should be not empty").Error())
+				assert.EqualError(t, err, "[user] invalid name")
 			},
 		},
 		{
@@ -67,11 +65,11 @@ func TestNewSupport(t *testing.T) {
 			expect: func(t *testing.T, s *user.User, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(user.ErrInvalidPassword, "should be not empty").Error())
+				assert.EqualError(t, err, "[user] invalid password")
 			},
 		},
 		{
-			testName: "should return password error",
+			testName: "should return salt error",
 			email:    "email",
 			name:     "name",
 			password: "password",
@@ -79,7 +77,7 @@ func TestNewSupport(t *testing.T) {
 			expect: func(t *testing.T, s *user.User, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(user.ErrInvalidSalt, "should be not empty").Error())
+				assert.EqualError(t, err, "[user] invalid salt")
 			},
 		},
 	}
