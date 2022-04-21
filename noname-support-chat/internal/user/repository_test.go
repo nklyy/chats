@@ -38,7 +38,7 @@ func TestNewRepository(t *testing.T) {
 			expect: func(t *testing.T, r user.Repository, err error) {
 				assert.Nil(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid user database")
+				assert.EqualError(t, err, "[user_repository] invalid user database")
 			},
 		},
 		{
@@ -49,7 +49,7 @@ func TestNewRepository(t *testing.T) {
 			expect: func(t *testing.T, r user.Repository, err error) {
 				assert.Nil(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid database name")
+				assert.EqualError(t, err, "[user_repository] invalid database name")
 			},
 		},
 		{
@@ -60,7 +60,7 @@ func TestNewRepository(t *testing.T) {
 			expect: func(t *testing.T, r user.Repository, err error) {
 				assert.Nil(t, r)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid logger")
+				assert.EqualError(t, err, "[user_repository] invalid logger")
 			},
 		},
 	}

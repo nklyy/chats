@@ -1,10 +1,10 @@
 package room
 
 import (
+	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/websocket"
 	"log"
-	"noname-one-time-session-chat/pkg/errors"
 	"time"
 )
 
@@ -32,10 +32,10 @@ type Client struct {
 
 func NewClient(fingerprint string, conn *websocket.Conn) (*Client, error) {
 	if fingerprint == "" {
-		return nil, errors.WithMessage(ErrInvalidFingerprint, "should be not empty")
+		return nil, errors.New("[chat_room_client] invalid fingerprint")
 	}
 	if conn == nil {
-		return nil, errors.WithMessage(ErrInvalidConnection, "should be not empty")
+		return nil, errors.New("[chat_room_client] invalid connection")
 	}
 
 	return &Client{

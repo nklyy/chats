@@ -3,10 +3,10 @@ package room
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/go-redis/redis/v8"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
-	"noname-one-time-session-chat/pkg/errors"
 )
 
 type Room struct {
@@ -18,7 +18,7 @@ type Room struct {
 
 func NewRoom(name string) (*Room, error) {
 	if name == "" {
-		return nil, errors.WithMessage(ErrInvalidName, "should be not empty")
+		return nil, errors.New("[chat_room] invalid name")
 	}
 
 	return &Room{

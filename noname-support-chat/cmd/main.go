@@ -109,7 +109,7 @@ func main() {
 		zapLogger.Fatalf("failde to create user service: %v", err)
 	}
 
-	userAuthService, err := auth.NewService(userService, zapLogger, jwtService)
+	userAuthService, err := auth.NewService(userService, jwtService, zapLogger)
 	if err != nil {
 		zapLogger.Fatalf("failde to create user service: %v", err)
 	}

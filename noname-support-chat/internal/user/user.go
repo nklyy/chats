@@ -1,9 +1,9 @@
 package user
 
 import (
+	"errors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
-	"noname-support-chat/pkg/errors"
 	"time"
 )
 
@@ -22,21 +22,21 @@ type User struct {
 
 func NewUser(email, name, password string, salt *int) (*User, error) {
 	if email == "" {
-		return nil, errors.WithMessage(ErrInvalidEmail, "should be not empty")
+		return nil, errors.New("[user] invalid email")
 	}
 	if name == "" {
-		return nil, errors.WithMessage(ErrInvalidName, "should be not empty")
+		return nil, errors.New("[user] invalid name")
 	}
 	if password == "" {
-		return nil, errors.WithMessage(ErrInvalidPassword, "should be not empty")
+		return nil, errors.New("[user] invalid password")
 	}
 	if salt == nil {
-		return nil, errors.WithMessage(ErrInvalidSalt, "should be not empty")
+		return nil, errors.New("[user] invalid salt")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), *salt)
 	if err != nil {
-		return nil, errors.WithMessage(ErrInvalidPassword, err.Error())
+		return nil, errors.New("[user] invalid password")
 	}
 
 	return &User{

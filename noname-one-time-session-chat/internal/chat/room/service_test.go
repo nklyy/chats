@@ -31,7 +31,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s room.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid logger")
+				assert.EqualError(t, err, "[chat_room_service] invalid logger")
 			},
 		},
 	}

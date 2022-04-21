@@ -4,7 +4,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"noname-one-time-session-chat/internal/chat/room"
-	"noname-one-time-session-chat/pkg/errors"
 	"testing"
 )
 
@@ -33,7 +32,7 @@ func TestNewRoom(t *testing.T) {
 			expect: func(t *testing.T, s *room.Room, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, errors.WithMessage(room.ErrInvalidName, "should be not empty").Error())
+				assert.EqualError(t, err, "[chat_room] invalid name")
 			},
 		},
 	}

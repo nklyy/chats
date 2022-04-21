@@ -25,13 +25,13 @@ type service struct {
 
 func NewService(repository Repository, userSvc user.Service, logger *zap.SugaredLogger) (Service, error) {
 	if repository == nil {
-		return nil, errors.New("invalid repository")
+		return nil, errors.New("[chat_room_service] invalid repository")
 	}
 	if userSvc == nil {
-		return nil, errors.New("invalid user service")
+		return nil, errors.New("[chat_room_service] invalid user service")
 	}
 	if logger == nil {
-		return nil, errors.New("invalid logger")
+		return nil, errors.New("[chat_room_service] invalid logger")
 	}
 
 	return &service{repository: repository, userSvc: userSvc, logger: logger}, nil

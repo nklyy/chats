@@ -32,19 +32,19 @@ type service struct {
 
 func NewService(redisClient *redis.Client, roomSvc room.Service, jwtSvc jwt.Service, userSvc user.Service, logger *zap.SugaredLogger) (Service, error) {
 	if redisClient == nil {
-		return nil, errors.New("invalid redis chat client")
+		return nil, errors.New("[chat_service] invalid redis chat client")
 	}
 	if roomSvc == nil {
-		return nil, errors.New("invalid room service")
+		return nil, errors.New("[chat_service] invalid room service")
 	}
 	if jwtSvc == nil {
-		return nil, errors.New("invalid jwt service")
+		return nil, errors.New("[chat_service] invalid jwt service")
 	}
 	if userSvc == nil {
-		return nil, errors.New("invalid user service")
+		return nil, errors.New("[chat_service] invalid user service")
 	}
 	if logger == nil {
-		return nil, errors.New("invalid logger")
+		return nil, errors.New("[chat_service] invalid logger")
 	}
 	return &service{
 		logger:      logger,

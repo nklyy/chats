@@ -45,36 +45,36 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, service auth.Service, err error) {
 				assert.Nil(t, service)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid user service")
-			},
-		},
-		{
-			name:    "should return invalid logger",
-			userSvc: mock_user.NewMockService(controller),
-			logger:  nil,
-			jwtSvc:  mock_jwt.NewMockService(controller),
-			expect: func(t *testing.T, service auth.Service, err error) {
-				assert.Nil(t, service)
-				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid logger")
+				assert.EqualError(t, err, "[user_auth_service] invalid user service")
 			},
 		},
 		{
 			name:    "should return invalid jwt service",
 			userSvc: mock_user.NewMockService(controller),
-			logger:  &zap.SugaredLogger{},
 			jwtSvc:  nil,
+			logger:  &zap.SugaredLogger{},
 			expect: func(t *testing.T, service auth.Service, err error) {
 				assert.Nil(t, service)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt service")
+				assert.EqualError(t, err, "[user_auth_service] invalid jwt service")
+			},
+		},
+		{
+			name:    "should return invalid logger",
+			userSvc: mock_user.NewMockService(controller),
+			jwtSvc:  mock_jwt.NewMockService(controller),
+			logger:  nil,
+			expect: func(t *testing.T, service auth.Service, err error) {
+				assert.Nil(t, service)
+				assert.NotNil(t, err)
+				assert.EqualError(t, err, "[user_auth_service] invalid logger")
 			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			svc, err := auth.NewService(tc.userSvc, tc.logger, tc.jwtSvc)
+			svc, err := auth.NewService(tc.userSvc, tc.jwtSvc, tc.logger)
 			tc.expect(t, svc, err)
 		})
 	}
@@ -92,7 +92,7 @@ func TestService_Registration(t *testing.T) {
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := auth.NewService(mockUserSvc, zapLogger, mockJwt)
+	service, _ := auth.NewService(mockUserSvc, mockJwt, zapLogger)
 
 	userEntity, _ := user.NewUser("email", "name", "password", &salt)
 	userDto := user.MapToDTO(userEntity)
@@ -161,7 +161,7 @@ func TestService_Login(t *testing.T) {
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := auth.NewService(mockUserSvc, zapLogger, mockJwt)
+	service, _ := auth.NewService(mockUserSvc, mockJwt, zapLogger)
 
 	userEntity, _ := user.NewUser("email", "name", "password", &salt)
 	userDto := user.MapToDTO(userEntity)
@@ -256,7 +256,7 @@ func TestService_Refresh(t *testing.T) {
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := auth.NewService(mockUserSvc, zapLogger, mockJwt)
+	service, _ := auth.NewService(mockUserSvc, mockJwt, zapLogger)
 
 	payload := jwt.Payload{
 		Id:             "id",
@@ -391,7 +391,7 @@ func TestService_Logout(t *testing.T) {
 	newLogger, _ := logger.NewLogger("development")
 	zapLogger, _ := newLogger.SetupZapLogger()
 
-	service, _ := auth.NewService(mockUserSvc, zapLogger, mockJwt)
+	service, _ := auth.NewService(mockUserSvc, mockJwt, zapLogger)
 
 	payload := jwt.Payload{
 		Id:             "id",

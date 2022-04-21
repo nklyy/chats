@@ -24,13 +24,13 @@ type middleware struct {
 
 func NewMiddleware(jwtSvc jwt.Service, userSvc Service, logger *zap.SugaredLogger) (Middleware, error) {
 	if jwtSvc == nil {
-		return nil, gerrors.New("invalid jwt service")
+		return nil, gerrors.New("[user_middleware] invalid jwt service")
 	}
 	if userSvc == nil {
-		return nil, gerrors.New("invalid user service")
+		return nil, gerrors.New("[user_middleware] invalid user service")
 	}
 	if logger == nil {
-		return nil, gerrors.New("invalid logger")
+		return nil, gerrors.New("[user_middleware] invalid logger")
 	}
 
 	return &middleware{jwtSvc: jwtSvc, userSvc: userSvc, logger: logger}, nil

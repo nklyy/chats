@@ -45,7 +45,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s user.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid repository")
+				assert.EqualError(t, err, "[user_service] invalid repository")
 			},
 		},
 		{
@@ -56,7 +56,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s user.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid logger")
+				assert.EqualError(t, err, "[user_service] invalid logger")
 			},
 		},
 		{
@@ -67,7 +67,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s user.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid salt")
+				assert.EqualError(t, err, "[user_service] invalid salt")
 			},
 		},
 	}

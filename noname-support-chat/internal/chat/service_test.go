@@ -50,7 +50,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s chat.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid redis chat client")
+				assert.EqualError(t, err, "[chat_service] invalid redis chat client")
 			},
 		},
 		{
@@ -63,7 +63,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s chat.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid room service")
+				assert.EqualError(t, err, "[chat_service] invalid room service")
 			},
 		},
 		{
@@ -76,7 +76,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s chat.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid jwt service")
+				assert.EqualError(t, err, "[chat_service] invalid jwt service")
 			},
 		},
 		{
@@ -89,7 +89,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s chat.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid user service")
+				assert.EqualError(t, err, "[chat_service] invalid user service")
 			},
 		},
 		{
@@ -102,7 +102,7 @@ func TestNewService(t *testing.T) {
 			expect: func(t *testing.T, s chat.Service, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "invalid logger")
+				assert.EqualError(t, err, "[chat_service] invalid logger")
 			},
 		},
 	}

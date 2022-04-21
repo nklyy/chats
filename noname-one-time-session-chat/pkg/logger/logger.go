@@ -16,7 +16,7 @@ type logger struct {
 
 func NewLogger(appEnv string) (Logger, error) {
 	if appEnv == "" {
-		return nil, errors.New("invalid app env")
+		return nil, errors.New("[logger] invalid app env")
 	}
 
 	return &logger{appEnv: appEnv}, nil
@@ -40,5 +40,5 @@ func (l *logger) SetupZapLogger() (*zap.SugaredLogger, error) {
 		return logger.Sugar(), nil
 	}
 
-	return nil, errors.New("incorrect app env")
+	return nil, errors.New("[logger] incorrect app env")
 }

@@ -15,7 +15,7 @@ type Handler struct {
 
 func NewHandler(authSvc Service) (*Handler, error) {
 	if authSvc == nil {
-		return nil, goErr.New("invalid auth service")
+		return nil, goErr.New("[chat_auth_handler] invalid auth service")
 	}
 
 	return &Handler{authSvc: authSvc}, nil

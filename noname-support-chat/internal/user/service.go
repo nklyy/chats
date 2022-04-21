@@ -25,13 +25,13 @@ type service struct {
 
 func NewService(repository Repository, logger *zap.SugaredLogger, salt *int) (Service, error) {
 	if repository == nil {
-		return nil, errors.New("invalid repository")
+		return nil, errors.New("[user_service] invalid repository")
 	}
 	if logger == nil {
-		return nil, errors.New("invalid logger")
+		return nil, errors.New("[user_service] invalid logger")
 	}
 	if salt == nil {
-		return nil, errors.New("invalid salt")
+		return nil, errors.New("[user_service] invalid salt")
 	}
 
 	return &service{repository: repository, logger: logger, salt: *salt}, nil
@@ -47,6 +47,10 @@ func (s *service) GetUserById(ctx context.Context, id string, withPassword bool)
 	if err != nil {
 		s.logger.Errorf("failed to get user: %v", err)
 		return nil, err
+	}
+
+	if !withPassword {
+		user.RemovePassword()
 	}
 
 	return MapToDTO(user), nil
