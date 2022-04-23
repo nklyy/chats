@@ -1,9 +1,9 @@
 package room
 
 import (
+	"errors"
 	"github.com/gorilla/websocket"
 	"log"
-	"noname-support-chat/pkg/errors"
 
 	"time"
 )
@@ -31,10 +31,10 @@ type Client struct {
 
 func NewClient(id string, conn *websocket.Conn) (*Client, error) {
 	if id == "" {
-		return nil, errors.WithMessage(ErrInvalidId, "should be not empty")
+		return nil, errors.New("[chat_room_client] invalid id")
 	}
 	if conn == nil {
-		return nil, errors.WithMessage(ErrInvalidConnection, "should be not empty")
+		return nil, errors.New("[chat_room_client] invalid websocket connection")
 	}
 
 	return &Client{
