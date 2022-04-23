@@ -4,7 +4,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"noname-one-time-session-chat/internal/chat/room"
+	"noname-support-chat/internal/chat/room"
 	"testing"
 )
 
@@ -12,37 +12,37 @@ func TestNewClient(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	fingerprint := "fingerprint"
+	id := "id"
 
 	tests := []struct {
-		name        string
-		fingerprint string
-		conn        *websocket.Conn
-		expect      func(*testing.T, *room.Client, error)
+		name   string
+		id     string
+		conn   *websocket.Conn
+		expect func(*testing.T, *room.Client, error)
 	}{
 		{
-			name:        "should return service",
-			fingerprint: fingerprint,
-			conn:        &websocket.Conn{},
+			name: "should return service",
+			id:   id,
+			conn: &websocket.Conn{},
 			expect: func(t *testing.T, s *room.Client, err error) {
 				assert.NotNil(t, s)
 				assert.Nil(t, err)
 			},
 		},
 		{
-			name:        "should return invalid fingerprint",
-			fingerprint: "",
-			conn:        &websocket.Conn{},
+			name: "should return invalid id",
+			id:   "",
+			conn: &websocket.Conn{},
 			expect: func(t *testing.T, s *room.Client, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
-				assert.EqualError(t, err, "[chat_room_client] invalid fingerprint")
+				assert.EqualError(t, err, "[chat_room_client] invalid id")
 			},
 		},
 		{
-			name:        "should return invalid connection",
-			fingerprint: fingerprint,
-			conn:        nil,
+			name: "should return invalid connection",
+			id:   id,
+			conn: nil,
 			expect: func(t *testing.T, s *room.Client, err error) {
 				assert.Nil(t, s)
 				assert.NotNil(t, err)
@@ -53,7 +53,7 @@ func TestNewClient(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			svc, err := room.NewClient(tc.fingerprint, tc.conn)
+			svc, err := room.NewClient(tc.id, tc.conn)
 			tc.expect(t, svc, err)
 		})
 	}

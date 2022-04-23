@@ -35,7 +35,7 @@ func NewClient(fingerprint string, conn *websocket.Conn) (*Client, error) {
 		return nil, errors.New("[chat_room_client] invalid fingerprint")
 	}
 	if conn == nil {
-		return nil, errors.New("[chat_room_client] invalid connection")
+		return nil, errors.New("[chat_room_client] invalid websocket connection")
 	}
 
 	return &Client{
