@@ -23,7 +23,7 @@ jobs:
 
       - name: Build server
         run: |
-          cd noname-one-time-session-chat
+          cd golang/noname-one-time-session-chat
           make build
 
   build-support-chat:
@@ -40,7 +40,7 @@ jobs:
 
       - name: Build server
         run: |
-          cd noname-support-chat
+          cd golang/noname-support-chat
           make build
 
   linter-sesion-chat:
@@ -54,7 +54,7 @@ jobs:
 
       - name: Run linter
         run: |
-          cd noname-one-time-session-chat
+          cd golang/noname-one-time-session-chat
           make lint
 
   linter-support-chat:
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run linter
         run: |
-          cd noname-support-chat
+          cd golang/noname-support-chat
           make lint
 
   test-session-chat:
@@ -82,7 +82,7 @@ jobs:
 
       - name: Run test
         run: |
-          cd noname-one-time-session-chat
+          cd golang/noname-one-time-session-chat
           export PATH=$PATH:$(go env GOPATH)/bin
           chmod +x env.sh
           ./env.sh
@@ -99,7 +99,7 @@ jobs:
 
       - name: Run test
         run: |
-          cd noname-support-chat
+          cd golang/noname-support-chat
           export PATH=$PATH:$(go env GOPATH)/bin
           chmod +x env.sh
           ./env.sh
