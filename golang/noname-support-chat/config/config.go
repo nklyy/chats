@@ -1,9 +1,10 @@
 package config
 
 import (
+	"sync"
+
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
-	"sync"
 )
 
 type Config struct {
