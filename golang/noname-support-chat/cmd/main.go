@@ -2,10 +2,6 @@ package main
 
 import (
 	"errors"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
-	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"noname-support-chat/config"
@@ -20,6 +16,11 @@ import (
 	"noname-support-chat/pkg/redis"
 	"os"
 	"syscall"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	"go.uber.org/zap"
 )
 
 func main() {
