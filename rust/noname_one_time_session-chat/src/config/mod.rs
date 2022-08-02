@@ -23,3 +23,15 @@ impl Config {
         Ok(Config { port, environment })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn works_case() {
+        let c = Config::new().unwrap();
+        assert_eq!(c.port.chars().count() > 0, true);
+        assert_eq!(c.environment.chars().count() > 0, true);
+    }
+}
