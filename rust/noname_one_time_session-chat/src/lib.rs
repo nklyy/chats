@@ -1,26 +1,33 @@
+mod api;
 mod config;
 mod databases;
 
 use config::Config;
 use databases::Databases;
-use std::process;
+use rocket::serde::json::{json, Value};
 
-pub async fn execute() {
-    println!("Hello, world!");
+#[macro_use]
+extern crate rocket;
 
-    let local_cfg = Config::new().unwrap_or_else(|err| {
-        eprintln!("[ERROR] Problem parsing env arguments: {}", err);
+#[catch(404)]
+fn not_found() -> Value {
+    json!({
+        "status": "error",
+        "reason": "Resource was not found."
+    })
+}
 
-        process::exit(1);
-    });
+#[launch]
+pub fn rocket() -> _ {
+    // let local_cfg = Config::new().unwrap_or_else(|err| {
+    //     eprintln!("[ERROR] Problem parsing env arguments: {}", err);
+    //     process::exit(1);
+    // });
 
-    let _dbs = Databases::new(local_cfg.mongo_uri, local_cfg.redis_uri)
-        .await
-        .unwrap_or_else(|err| {
-            eprintln!("[ERROR] Failed connect to databases: {}", err);
+    let local_cfg = Config::new();
 
-            process::exit(1);
-        });
-
-    println!("{}", local_cfg.port);
+    rocket::custom(Config::from_env())
+        .attach(Databases::init(local_cfg.mongo_uri, local_cfg.redis_uri))
+        .mount("/api", routes![api::health::route::check])
+        .register("/", catchers![not_found])
 }

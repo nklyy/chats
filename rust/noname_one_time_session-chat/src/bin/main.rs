@@ -1,7 +1,7 @@
-use noname_one_time_session_chat::execute;
+use noname_one_time_session_chat;
 
-#[tokio::main]
-async fn main() {
-    // execute server
-    execute().await
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error> {
+    let _rocket = noname_one_time_session_chat::rocket().launch().await?;
+    Ok(())
 }

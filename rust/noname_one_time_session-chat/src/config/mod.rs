@@ -1,4 +1,5 @@
 use dotenv::dotenv;
+use rocket::{figment::Figment, Config as RocketConfig};
 use std::env;
 
 pub struct Config {
@@ -10,35 +11,46 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Result<Config, String> {
+    pub fn new() -> Config {
         dotenv().ok();
 
         let port = match env::var("PORT") {
             Ok(port) => port,
-            Err(_) => return Err("incorrect port".to_string()),
+            Err(_) => panic!("incorrect port"),
         };
 
         let environment = match env::var("APP_ENV") {
             Ok(environment) => environment,
-            Err(_) => return Err("incorrect app_env".to_string()),
+            Err(_) => panic!("incorrect app_env"),
         };
 
         let mongo_uri = match env::var("MONGO_URI") {
             Ok(environment) => environment,
-            Err(_) => return Err("incorrect mongo_uri".to_string()),
+            Err(_) => panic!("incorrect mongo_uri"),
         };
 
         let redis_uri = match env::var("REDIS_URI") {
             Ok(environment) => environment,
-            Err(_) => return Err("incorrect redis_uri".to_string()),
+            Err(_) => panic!("incorrect redis_uri"),
         };
 
-        Ok(Config {
+        Config {
             port,
             environment,
             mongo_uri,
             redis_uri,
-        })
+        }
+    }
+
+    pub fn from_env() -> Figment {
+        let local_cfg = Config::new();
+
+        let port: u16 = local_cfg
+            .port
+            .parse()
+            .expect("PORT environment variable should parse to an integer");
+
+        RocketConfig::figment().merge(("port", port))
     }
 }
 
@@ -48,7 +60,7 @@ mod tests {
 
     #[test]
     fn create_config() {
-        let c = Config::new().unwrap();
+        let c = Config::new();
         assert_eq!(c.port.chars().count() > 0, true);
         assert_eq!(c.environment.chars().count() > 0, true);
         assert_eq!(c.mongo_uri.chars().count() > 0, true);

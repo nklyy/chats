@@ -1,5 +1,6 @@
 use mongodb::Client as MongoClient;
 use redis::Client as RedisClient;
+use rocket::fairing::AdHoc;
 
 #[derive(Debug)]
 pub struct Databases {
@@ -8,7 +9,7 @@ pub struct Databases {
 }
 
 impl Databases {
-    pub async fn new(mongo_uri: String, redis_uri: String) -> Result<Databases, String> {
+    async fn new_clients(mongo_uri: String, redis_uri: String) -> Result<Databases, String> {
         let mongo_client = match MongoClient::with_uri_str(mongo_uri).await {
             Ok(client) => client,
             Err(_) => return Err("failed to create MongoDB client".to_string()),
@@ -24,6 +25,17 @@ impl Databases {
             redis_client,
         })
     }
+
+    pub fn init(mongo_uri: String, redis_uri: String) -> AdHoc {
+        AdHoc::on_ignite("Connecting to MongoDB", |rocket| async move {
+            match Self::new_clients(mongo_uri, redis_uri).await {
+                Ok(dbs) => rocket.manage(dbs),
+                Err(error) => {
+                    panic!("Cannot connect to databases:: {:?}", error)
+                }
+            }
+        })
+    }
 }
 
 #[cfg(test)]
@@ -32,7 +44,7 @@ mod tests {
 
     #[tokio::test]
     async fn databases_connections() {
-        let _dbs = Databases::new(
+        let _dbs = Databases::new_clients(
             "mongodb://localhost:27017".to_string(),
             "redis://localhost".to_string(),
         )
@@ -42,7 +54,7 @@ mod tests {
 
     #[tokio::test]
     async fn incorrect_mongo_uri() {
-        let dbs = Databases::new("".to_string(), "redis://localhost".to_string())
+        let dbs = Databases::new_clients("".to_string(), "redis://localhost".to_string())
             .await
             .unwrap_err();
 
@@ -51,7 +63,7 @@ mod tests {
 
     #[tokio::test]
     async fn incorrect_redis_uri() {
-        let dbs = Databases::new("mongodb://localhost:27017".to_string(), "".to_string())
+        let dbs = Databases::new_clients("mongodb://localhost:27017".to_string(), "".to_string())
             .await
             .unwrap_err();
 
