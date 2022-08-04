@@ -9,31 +9,27 @@ pub struct Databases {
 }
 
 impl Databases {
-    async fn new_clients(mongo_uri: String, redis_uri: String) -> Result<Databases, String> {
+    async fn new_clients(mongo_uri: String, redis_uri: String) -> Databases {
         let mongo_client = match MongoClient::with_uri_str(mongo_uri).await {
             Ok(client) => client,
-            Err(_) => return Err("failed to create MongoDB client".to_string()),
+            Err(err) => panic!("failed to create MongoDB client: {}", err),
         };
 
         let redis_client = match RedisClient::open(redis_uri) {
             Ok(client) => client,
-            Err(_) => return Err("failed to create redis client".to_string()),
+            Err(err) => panic!("failed to create redis client: {}", err),
         };
 
-        Ok(Databases {
+        Databases {
             mongo_client,
             redis_client,
-        })
+        }
     }
 
     pub fn init(mongo_uri: String, redis_uri: String) -> AdHoc {
         AdHoc::on_ignite("Connecting to MongoDB", |rocket| async move {
-            match Self::new_clients(mongo_uri, redis_uri).await {
-                Ok(dbs) => rocket.manage(dbs),
-                Err(error) => {
-                    panic!("Cannot connect to databases:: {:?}", error)
-                }
-            }
+            let dbs = Self::new_clients(mongo_uri, redis_uri).await;
+            rocket.manage(dbs)
         })
     }
 }
@@ -48,25 +44,19 @@ mod tests {
             "mongodb://localhost:27017".to_string(),
             "redis://localhost".to_string(),
         )
-        .await
-        .unwrap();
+        .await;
     }
 
     #[tokio::test]
+    #[should_panic]
     async fn incorrect_mongo_uri() {
-        let dbs = Databases::new_clients("".to_string(), "redis://localhost".to_string())
-            .await
-            .unwrap_err();
-
-        assert_eq!(dbs, "failed to create MongoDB client".to_string())
+        let _dbs = Databases::new_clients("".to_string(), "redis://localhost".to_string()).await;
     }
 
     #[tokio::test]
+    #[should_panic]
     async fn incorrect_redis_uri() {
-        let dbs = Databases::new_clients("mongodb://localhost:27017".to_string(), "".to_string())
-            .await
-            .unwrap_err();
-
-        assert_eq!(dbs, "failed to create redis client".to_string())
+        let _dbs =
+            Databases::new_clients("mongodb://localhost:27017".to_string(), "".to_string()).await;
     }
 }
