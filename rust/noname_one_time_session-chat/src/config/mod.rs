@@ -1,9 +1,8 @@
 use dotenv::dotenv;
-use rocket::{figment::Figment, Config as RocketConfig};
 use std::env;
 
 pub struct Config {
-    pub port: String,
+    pub port: u16,
     pub environment: String,
 
     pub mongo_uri: String,
@@ -11,13 +10,15 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Config {
+    pub fn init() -> Config {
         dotenv().ok();
 
         let port = match env::var("PORT") {
             Ok(port) => port,
             Err(_) => panic!("incorrect port"),
         };
+
+        let port: u16 = port.parse().expect("Can't parse port into number");
 
         let environment = match env::var("APP_ENV") {
             Ok(environment) => environment,
@@ -41,17 +42,6 @@ impl Config {
             redis_uri,
         }
     }
-
-    pub fn from_env() -> Figment {
-        let local_cfg = Config::new();
-
-        let port: u16 = local_cfg
-            .port
-            .parse()
-            .expect("PORT environment variable should parse to an integer");
-
-        RocketConfig::figment().merge(("port", port))
-    }
 }
 
 #[cfg(test)]
@@ -60,8 +50,8 @@ mod tests {
 
     #[test]
     fn create_config() {
-        let c = Config::new();
-        assert_eq!(c.port.chars().count() > 0, true);
+        let c = Config::init();
+        assert_eq!(c.port > 0, true);
         assert_eq!(c.environment.chars().count() > 0, true);
         assert_eq!(c.mongo_uri.chars().count() > 0, true);
         assert_eq!(c.redis_uri.chars().count() > 0, true);
