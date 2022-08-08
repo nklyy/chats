@@ -1,6 +1,7 @@
 use actix_web::HttpResponse;
 use serde::Serialize;
 
+pub mod chat;
 pub mod health;
 
 #[derive(Serialize)]
