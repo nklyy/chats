@@ -25,12 +25,20 @@
     socket.onopen = function (e) {
         alert("[open] Соединение установлено");
         alert("Отправляем данные на сервер");
-        socket.send("Меня зовут Джон");
+        socket.send(JSON.stringify({ status: "ok" }));
     };
 
     socket.onmessage = function (event) {
         alert(`[message] Данные получены с сервера: ${event.data}`);
     };
+
+    socket.onclose = function (e) {
+        if (e.reason) {
+            alert(`[close] Connection close, reason: "${e.reason}"`)
+        } else {
+            alert(`[close] Connection close`)
+        }
+    }
 
     // отправка сообщения из формы
     document.forms.publish.onsubmit = function () {

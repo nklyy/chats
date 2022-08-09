@@ -21,7 +21,7 @@ pub async fn execute() -> Result<(), std::io::Error> {
         App::new()
             .wrap(Logger::default())
             .app_data(web::Data::new(dbs.clone()))
-            .service(api::chat::service::chat)
+            .service(api::chat::chat)
             .service(
                 web::scope("/api").service(api::health::service::check), // ...so this handles requests for `GET /app/index.html`
             )
