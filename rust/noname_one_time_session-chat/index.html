@@ -15,28 +15,34 @@
         <input type="submit" value="Отправить">
     </form>
 
+    <input type="submit" value="disconnect" onclick="sendDisconnect()">
+
     <!-- div с сообщениями -->
     <div id="messages"></div>
 </body>
 
 <script>
+    // let socket = new WebSocket("ws://localhost:3000/chat?fingerprint=asd");
     let socket = new WebSocket("ws://localhost:3000/chat");
 
     socket.onopen = function (e) {
         alert("[open] Соединение установлено");
         alert("Отправляем данные на сервер");
-        socket.send(JSON.stringify({ status: "ok" }));
+        // socket.send(JSON.stringify({ action: "publish-room", message: "message" }));
     };
 
     socket.onmessage = function (event) {
+        console.log(event);
         alert(`[message] Данные получены с сервера: ${event.data}`);
     };
 
     socket.onclose = function (e) {
         if (e.reason) {
-            alert(`[close] Connection close, reason: "${e.reason}"`)
+            // alert(`[close] Connection close, reason: "${e.reason}"`)
+            console.log(`[close] Connection close, reason: "${e.reason}"`)
         } else {
-            alert(`[close] Connection close`)
+            // alert(`[close] Connection close`)
+            console.log(`[close] Connection close`)
         }
     }
 
@@ -44,17 +50,25 @@
     document.forms.publish.onsubmit = function () {
         let outgoingMessage = this.message.value;
 
-        socket.send(outgoingMessage);
+        socket.send(JSON.stringify({ action: "publish-room", message: outgoingMessage }));
         return false;
     };
 
     // получение сообщения - отобразить данные в div#messages
     socket.onmessage = function (event) {
         let message = event.data;
+        let js_msg = JSON.parse(event.data)
+        if (js_msg.action == "disconnected") {
+            return socket.close();
+        }
 
         let messageElem = document.createElement('div');
         messageElem.textContent = message;
         document.getElementById('messages').prepend(messageElem);
+    }
+
+    const sendDisconnect = () => {
+        socket.send(JSON.stringify({ action: "disconnect", message: "message" }))
     }
 </script>
 

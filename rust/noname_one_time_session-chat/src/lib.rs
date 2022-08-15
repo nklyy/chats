@@ -2,7 +2,9 @@ mod api;
 mod config;
 mod databases;
 
+use actix::Actor;
 use actix_web::{middleware::Logger, web, App, HttpServer};
+use api::chat::server::ChatServer;
 use config::Config;
 use databases::Databases;
 
@@ -17,11 +19,14 @@ pub async fn execute() -> Result<(), std::io::Error> {
     let local_cfg = Config::init();
     let dbs = Databases::init(local_cfg.mongo_uri, local_cfg.redis_uri).await;
 
+    let chat_server = ChatServer::new().start();
+
     HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())
             .app_data(web::Data::new(dbs.clone()))
-            .service(api::chat::chat)
+            .app_data(web::Data::new(chat_server.clone()))
+            .service(api::chat::session::chat)
             .service(
                 web::scope("/api").service(api::health::service::check), // ...so this handles requests for `GET /app/index.html`
             )
