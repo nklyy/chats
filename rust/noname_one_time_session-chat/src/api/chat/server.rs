@@ -63,13 +63,13 @@ impl ChatServer {
 
 impl ChatServer {
     /// Send message to all users in the room
-    fn send_disconnect_message(&self, room: &str, message: &str) {
+    fn send_disconnect_message(&self, room: &str) {
         if let Some(sessions) = self.rooms.get(room) {
             for id in sessions {
                 if let Some(addr) = self.sessions.get(id) {
                     addr.do_send(SessionMessage {
                         action: "disconnected".to_string(),
-                        message: Some(message.to_string()),
+                        message: None,
                         session_id: None,
                         from: None,
                     });
@@ -78,13 +78,13 @@ impl ChatServer {
         }
     }
 
-    fn send_connect_message(&self, room: &str, message: &str) {
+    fn send_connect_message(&self, room: &str) {
         if let Some(sessions) = self.rooms.get(room) {
             for id in sessions {
                 if let Some(addr) = self.sessions.get(id) {
                     addr.do_send(SessionMessage {
                         action: "connected".to_string(),
-                        message: Some(message.to_string()),
+                        message: None,
                         session_id: Some(id.to_string()),
                         from: None,
                     });
@@ -122,8 +122,6 @@ impl Handler<Publish> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, msg: Publish, _: &mut Context<Self>) {
-        // println!("{:?}", msg.message);
-
         for (name, sessions) in &self.rooms {
             let found_user = sessions.get(&msg.session_id);
             if found_user != None {
@@ -150,20 +148,16 @@ impl Handler<Connect> for ChatServer {
                 room_sessions.insert(id.to_string().to_owned());
                 // println!("{}", room_name);
                 let room_name = room_name.clone();
-                self.send_connect_message(&room_name, "Connected");
+                self.send_connect_message(&room_name);
             }
             None => {
                 self.rooms
                     .entry(Uuid::new_v4().to_string())
                     .or_insert_with(HashSet::new)
                     .insert(id.to_string());
-
-                // println!("{:?}", self.rooms);
-                // println!("{:?}", self.sessions);
             }
         }
 
-        // println!("{:?}", self.rooms);
         id.to_string()
     }
 }
@@ -188,7 +182,7 @@ impl Handler<Disconnect> for ChatServer {
         }
 
         for room in rooms {
-            self.send_disconnect_message(&room, "Disconnected");
+            self.send_disconnect_message(&room);
             self.rooms.remove(&room);
         }
     }

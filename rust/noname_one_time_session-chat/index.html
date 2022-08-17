@@ -23,7 +23,7 @@
 
 <script>
     // let socket = new WebSocket("ws://localhost:3000/chat?fingerprint=asd");
-    let socket = new WebSocket("ws://localhost:3000/chat");
+    let socket = new WebSocket("ws://localhost:5000/chat");
 
     socket.onopen = function (e) {
         alert("[open] Соединение установлено");
@@ -46,7 +46,6 @@
         }
     }
 
-    // отправка сообщения из формы
     document.forms.publish.onsubmit = function () {
         let outgoingMessage = this.message.value;
 
@@ -54,7 +53,6 @@
         return false;
     };
 
-    // получение сообщения - отобразить данные в div#messages
     socket.onmessage = function (event) {
         let message = event.data;
         let js_msg = JSON.parse(event.data)
