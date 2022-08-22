@@ -7,6 +7,7 @@ use actix::{
 use actix_web::{get, web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
 use actix_web_actors::ws::CloseReason;
+use log::{error, info};
 use serde::Deserialize;
 
 use crate::api::chat::server;
@@ -139,7 +140,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
             Ok(ws::Message::Text(text)) => {
                 let msg: ChatMessage = match serde_json::from_str(&text) {
                     Ok(r) => r,
-                    Err(_) => {
+                    Err(err) => {
+                        error!("invalid request json: {}", err);
                         ctx.close(Some(CloseReason {
                             code: ws::CloseCode::Invalid,
                             description: Some("invalid request json".to_string()),
@@ -157,6 +159,15 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Session {
 
                 if msg.action == "disconnect" {
                     return ctx.stop();
+                }
+
+                if msg.action != "publish-room" || msg.action != "disconnect" {
+                    info!("unsupported action: {}", msg.action);
+                    ctx.close(Some(CloseReason {
+                        code: ws::CloseCode::Unsupported,
+                        description: Some("unsupported action".to_string()),
+                    }));
+                    ctx.stop()
                 }
 
                 // ctx.text(text)
