@@ -1,1 +1,1 @@
-<img src="https://github.com/nn-labs/noname-chats/workflows/development/badge.svg?branch=dev"><br>
+<img src="https://github.com/nklyy/chats/workflows/testing/badge.svg?branch=dev"><br>
