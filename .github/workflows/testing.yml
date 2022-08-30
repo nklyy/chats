@@ -82,6 +82,7 @@ jobs:
 
       - name: Run test
         run: |
+          cd golang/one-time-session-chat
           export APP_PORT=5000
           export APP_ENV=development
           export MONGO_DB_NAME=Example
@@ -102,6 +103,7 @@ jobs:
 
       - name: Run test
         run: |
+          cd golang/support-chat
           export APP_PORT=5000
           export APP_ENV=development
           export MONGO_DB_NAME=Example
