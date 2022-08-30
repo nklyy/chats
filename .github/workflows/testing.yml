@@ -1,0 +1,123 @@
+name: testing
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-session-chat:
+    runs-on: ubuntu-latest
+    name: Build session chat
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build server
+        run: |
+          cd golang/one-time-session-chat
+          make build
+
+  build-support-chat:
+    runs-on: ubuntu-latest
+    name: Build support chat
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build server
+        run: |
+          cd golang/support-chat
+          make build
+
+  linter-sesion-chat:
+    runs-on: ubuntu-latest
+    name: Run linter sesion chat
+    needs:
+      - build-session-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run linter
+        run: |
+          cd golang/one-time-session-chat
+          make lint
+
+  linter-support-chat:
+    runs-on: ubuntu-latest
+    name: Run linter support chat
+    needs:
+      - build-support-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run linter
+        run: |
+          cd golang/support-chat
+          make lint
+
+  test-session-chat:
+    runs-on: ubuntu-latest
+    name: Run tests session chat
+    needs:
+      - linter-sesion-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run test
+        run: |
+          cd golang/one-time-session-chat
+          export PATH=$PATH:$(go env GOPATH)/bin
+          export APP_PORT=5000
+          export APP_ENV=development
+          export MONGO_DB_NAME=Example
+          export MONGO_DB_URL=http://127.0.0.1
+          export REDIS_HOST=localhost
+          export REDIS_PORT=6380
+          export SALT=15
+          make test
+
+  test-support-chat:
+    runs-on: ubuntu-latest
+    name: Run tests support chat
+    needs:
+      - linter-support-chat
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run test
+        run: |
+          cd golang/support-chat
+          export PATH=$PATH:$(go env GOPATH)/bin
+          export APP_PORT=5000
+          export APP_ENV=development
+          export MONGO_DB_NAME=Example
+          export MONGO_DB_URL=http://127.0.0.1
+          export REDIS_HOST_AUTH=localhost
+          export REDIS_PORT_AUTH=6379
+          export REDIS_HOST_CHAT=localhost
+          export REDIS_PORT_CHAT=6380
+          export SALT=10
+          export JWT_SECRET_ACCESS=asd
+          export JWT_EXPIRY_ACCESS=1
+          export JWT_SECRET_REFRESH=dsa
+          export JWT_EXPIRY_REFRESH=2
+          export AUTO_LOGOUT=4
+          make test
