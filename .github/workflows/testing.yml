@@ -83,6 +83,7 @@ jobs:
       - name: Run test
         run: |
           cd golang/one-time-session-chat
+          go install github.com/golang/mock/mockgen@v1.6.0
           export PATH=$PATH:$(go env GOPATH)/bin
           export APP_PORT=5000
           export APP_ENV=development
@@ -105,6 +106,7 @@ jobs:
       - name: Run test
         run: |
           cd golang/support-chat
+          go install github.com/golang/mock/mockgen@v1.6.0
           export PATH=$PATH:$(go env GOPATH)/bin
           export APP_PORT=5000
           export APP_ENV=development
