@@ -31,26 +31,26 @@ jobs:
     name: Build support chat
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.17
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build server
         run: |
           cd golang/support-chat
           make build
 
-  linter-sesion-chat:
+  linter-session-chat:
     runs-on: ubuntu-latest
-    name: Run linter sesion chat
+    name: Run linter session chat
     needs:
       - build-session-chat
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run linter
         run: |
@@ -64,7 +64,7 @@ jobs:
       - build-support-chat
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run linter
         run: |
@@ -75,10 +75,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Run tests session chat
     needs:
-      - linter-sesion-chat
+      - linter-session-chat
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run test
         run: |
@@ -100,7 +100,7 @@ jobs:
       - linter-support-chat
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run test
         run: |
